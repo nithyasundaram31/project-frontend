@@ -44,18 +44,17 @@ export const register = (userData) => async (dispatch) => {
 export const login = (userData) => async (dispatch) => {
   try {
     const response = await API.post('/login', userData);
-    toast.success(response.message || 'Login successful');
+    toast.success(response.data.message || 'Login successful');
     dispatch({ type: 'LOGIN_SUCCESS', payload: response.data });
-    // Save data and token to localStorage
-    localStorage.setItem('user', JSON.stringify(response.data));
-    localStorage.setItem('token', JSON.stringify(response.data?.token));
-    return response.data;  // Return the response for successful login
+    localStorage.setItem('user', JSON.stringify(response.data.user));
+    localStorage.setItem('token', response.data.token);
+    return response.data;
   } catch (error) {
     toast.error(error.response?.data?.message || error.response?.data);
     dispatch({ type: 'LOGIN_FAIL', payload: error.response.data });
-  
   }
 };
+
 
 // LOGOUT
 export const logout = () => (dispatch) => {
