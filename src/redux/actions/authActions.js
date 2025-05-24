@@ -29,16 +29,17 @@ API.interceptors.request.use(
 export const register = (userData) => async (dispatch) => {
   try {
     const response = await API.post('/register', userData);
-    toast.success(response?.message || 'Register successful');
+    toast.success(response.data?.message || 'Register successful');
+
     dispatch({ type: 'REGISTER_SUCCESS', payload: response.data });
-    return response;
+    return response.data;
   } catch (error) {
-    toast.error(error?.response?.data.error);
+    toast.error(error?.response?.data?.error || 'Registration failed');
     console.log(error);
-    dispatch({ type: 'REGISTER_FAIL', payload: error.response });
-   
+    dispatch({ type: 'REGISTER_FAIL', payload: error.response?.data });
   }
 };
+
 
 // LOGIN
 export const login = (userData) => async (dispatch) => {
