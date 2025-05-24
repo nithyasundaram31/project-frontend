@@ -13,9 +13,9 @@ import StudentsList from './pages/StudentsList';
 import QuestionBank from './pages/QuestionBank';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import ErrorPage from './components/ErrorPage';
-// import TermsOfService from './components/footer/TermsOfService';
-// import PrivacyPolicy from './components/footer/PrivacyPolicy';
-// import About from './components/footer/About ';
+import TermsOfService from './components/footer/TermsOfService';
+import PrivacyPolicy from './components/footer/PrivacyPolicy';
+import About from './components/footer/About ';
 import ExamView from './components/ExamView';
 import StudentDashboardPage from './pages/studentPages/StudentDashboardPage';
 import UpcomingExams from './pages/studentPages/UpcomingExams';
@@ -34,9 +34,9 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
 
-        {/* <Route path="/about" element={<About />} />
+        <Route path="/about" element={<About />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
-        <Route path="/terms" element={<TermsOfService />} /> */}
+        <Route path="/terms" element={<TermsOfService />} />
 
         <Route path="/student/dashboard" element={isAuthenticated && user?.role === 'student' ? <StudentDashboard /> : <Navigate to="/login" />} >
           <Route path='' element={<StudentDashboardPage />} />
