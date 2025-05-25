@@ -49,6 +49,7 @@ export const login = (userData) => async (dispatch) => {
     dispatch({ type: 'LOGIN_SUCCESS', payload: response.data });
     localStorage.setItem('user', JSON.stringify(response.data.user));
     localStorage.setItem('token', response.data.token);
+    console.log("Login request to API:", userData);
     return response.data;
   } catch (error) {
     toast.error(error.response?.data?.message || error.response?.data);
