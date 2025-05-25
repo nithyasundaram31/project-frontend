@@ -13,7 +13,7 @@ export const CLEAR_EXAM_ERRORS = 'CLEAR_EXAM_ERRORS';
 
 // Base configuration for Axios
 const API = axios.create({
-    baseURL: import.meta.env.VITE_BACKEND_URL || 'https://project-backend-om0o.onrender.com/api/exam',
+    baseURL: `${import.meta.env.VITE_BACKEND_URL}/api/exam`,
     timeout: 15000, // 15 second timeout for exam submissions
     headers: {
         'Content-Type': 'application/json'

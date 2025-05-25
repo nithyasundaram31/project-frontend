@@ -11,7 +11,7 @@ import {
 
 // Base configuration for Axios
 const API = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL || 'https://project-backend-om0o.onrender.com/api/exam'
+  baseURL: `${import.meta.env.VITE_BACKEND_URL}/api/exam`
 });
 
 // Add a request interceptor

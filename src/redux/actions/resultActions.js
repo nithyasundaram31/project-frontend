@@ -4,7 +4,7 @@ import ErrorHandler from '../../components/ErrorHandler';
 
 // Base configuration for Axios
 const API = axios.create({
-    baseURL: import.meta.env.VITE_BACKEND_URL  || 'https://online-assessment-platform-backend-cmgj.onrender.com/api/result'  // Replace with your backend API URL
+     baseURL: `${import.meta.env.VITE_BACKEND_URL}/api/result`
 });
 
 // Add a request interceptor

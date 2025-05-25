@@ -4,7 +4,7 @@ import ErrorHandler from '../../components/ErrorHandler';
 
 // Base configuration for Axios
 const API = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL || 'https://project-backend-om0o.onrender.com/api/auth'  // Replace with your backend API URL
+   baseURL: `${import.meta.env.VITE_BACKEND_URL}/api/auth`  // Replace with your backend API URL
 });
 
 // Add a request interceptor

@@ -10,7 +10,7 @@ import {
 
 // Base configuration for Axios
 const API = axios.create({
-    baseURL: import.meta.env.VITE_BACKEND_URL || 'https://project-backend-om0o.onrender.com/api/questions',
+    baseURL: `${import.meta.env.VITE_BACKEND_URL}/api/questions`,
     timeout: 10000, // 10 second timeout
     headers: {
         'Content-Type': 'application/json'

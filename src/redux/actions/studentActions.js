@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 
 // Base configuration for Axios
 const API = axios.create({
-     baseURL: import.meta.env.VITE_BACKEND_URL || 'https://project-backend-om0o.onrender.com/api/students'
+     baseURL: `${import.meta.env.VITE_BACKEND_URL}/api/students`
 });
 
 // Add a request interceptor
