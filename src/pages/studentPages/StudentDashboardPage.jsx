@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { getSubmitted } from "../../redux/actions/submitExam";
 
 const StudentDashboardPage = () => {
-    const { submitedData } = useSelector((state) => state.examSubmit);
+    const { submittedData } = useSelector((state) => state.examSubmit);
     const [isLoading, setIsLoading] = useState(true);
     const dispatch = useDispatch();
     const hasFetchedExams = useRef(false);
@@ -24,7 +24,7 @@ const StudentDashboardPage = () => {
 
     useEffect(() => {
         const loadExams = () => {
-            const cachedData = localStorage.getItem('submitedData');
+            const cachedData = localStorage.getItem('submittedData');
             if (cachedData) {
                 const parsedData = JSON.parse(cachedData);
                 dispatch({
@@ -44,10 +44,10 @@ const StudentDashboardPage = () => {
     }, [dispatch, fetchExams]); // Removed loadExams from dependencies
 
     useEffect(() => {
-        if (submitedData?.length) {
-            localStorage.setItem('submitedData', JSON.stringify(submitedData));
+        if (submittedData?.length) {
+            localStorage.setItem('submittedData', JSON.stringify(submittedData));
         }
-    }, [submitedData]);
+    }, [submittedData]);
 
     if (isLoading) {
         return (
@@ -56,7 +56,7 @@ const StudentDashboardPage = () => {
             </div>
         );
     }
-    const sortedSubmissions = submitedData?.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+    const sortedSubmissions = submittedData?.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
     const recentSubmission = sortedSubmissions?.[0];
 
     return (
