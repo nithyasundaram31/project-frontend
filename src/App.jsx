@@ -23,43 +23,57 @@ import ExamDetails from './pages/studentExam/ExamDetails';
 import ExamInterface from './pages/studentExam/ExamInterface';
 import Results from './pages/studentExam/Results';
 import StudentResult from './components/StudentResults';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
 
   return (
     <Routes>
+      {/* Public Routes */}
       <Route path="/" element={isAuthenticated ? <Navigate to={`/${user?.role}/dashboard`} /> : <Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
-
       <Route path="/about" element={<About />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />
 
-      {isAuthenticated && user?.role === 'student' && (
-        <Route path="/student/dashboard" element={<StudentDashboard />}>
-          <Route index element={<StudentDashboardPage />} />
-          <Route path="profile" element={<ProfileUpdate />} />
-          <Route path="exams" element={<UpcomingExams />} />
-          <Route path="exam-details/:id" element={<ExamDetails />} />
-          <Route path="start-assessment/:id" element={<ExamInterface />} />
-          <Route path="results" element={<Results />} />
-        </Route>
-      )}
+      {/* Student Routes */}
+      <Route
+        path="/student/dashboard"
+        element={
+          <ProtectedRoute role="student">
+            <StudentDashboard />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<StudentDashboardPage />} />
+        <Route path="profile" element={<ProfileUpdate />} />
+        <Route path="exams" element={<UpcomingExams />} />
+        <Route path="exam-details/:id" element={<ExamDetails />} />
+        <Route path="start-assessment/:id" element={<ExamInterface />} />
+        <Route path="results" element={<Results />} />
+      </Route>
 
-      {isAuthenticated && user?.role === 'admin' && (
-        <Route path="/admin/dashboard" element={<AdminDashboard />}>
-          <Route index element={<AdminDashboardPage />} />
-          <Route path="profile" element={<ProfileUpdate />} />
-          <Route path="exams" element={<ExamScheduling />} />
-          <Route path="exams/:id" element={<ExamView />} />
-          <Route path="questions" element={<QuestionBank />} />
-          <Route path="students" element={<StudentsList />} />
-          <Route path="student-result/:id" element={<StudentResult />} />
-        </Route>
-      )}
+      {/* Admin Routes */}
+      <Route
+        path="/admin/dashboard"
+        element={
+          <ProtectedRoute role="admin">
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<AdminDashboardPage />} />
+        <Route path="profile" element={<ProfileUpdate />} />
+        <Route path="exams" element={<ExamScheduling />} />
+        <Route path="exams/:id" element={<ExamView />} />
+        <Route path="questions" element={<QuestionBank />} />
+        <Route path="students" element={<StudentsList />} />
+        <Route path="student-result/:id" element={<StudentResult />} />
+      </Route>
 
+      {/* Catch-all Error Page */}
       <Route path="*" element={<ErrorPage />} />
     </Routes>
   );
