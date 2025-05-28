@@ -6,7 +6,7 @@ const initialState = {
 };
 
 //students reducer
-export const studentReducer = (state = initialState, action) => {
+ const studentReducer = (state = initialState, action) => {
     switch (action.type) {
         case 'GET_ALL_STUDENTS':
             return { ...state, students: action.payload };
@@ -59,3 +59,4 @@ export const studentReducer = (state = initialState, action) => {
             return state;
     }
 };
+export default studentReducer;

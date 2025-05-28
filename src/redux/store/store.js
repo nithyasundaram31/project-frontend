@@ -13,17 +13,11 @@
 
 // export default store;
 
-// src/redux/store/store.js
-import { configureStore } from '@reduxjs/toolkit'
-import authReducer from '../reducers/authReducer' // Example: auth slice
-import examReducer from '../reducers/examReducer' // Example: exam slice
+import { configureStore } from '@reduxjs/toolkit';
+import rootReducer from '../reducers/rootReducer';
 
 const store = configureStore({
-  reducer: {
-    auth: authReducer,
-    exam: examReducer,
-  },
-  // thunk default-ஆ இருக்குது, extra settings வேணாம
-})
+  reducer: rootReducer,
+});
 
 export default store;

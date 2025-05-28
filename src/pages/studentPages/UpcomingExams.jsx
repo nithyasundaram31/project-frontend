@@ -7,9 +7,13 @@ import { useNavigate } from 'react-router-dom';
 import { getSubmitted } from '../../redux/actions/submitExam';
 
 const UpcomingExams = () => {
-    const { exams, submittedData, user } = useSelector((state) => state.exams);
+    // ✅ Corrected selectors to pull from proper reducers
+    const exams = useSelector((state) => state.exams.exams);
+    const submittedData = useSelector((state) => state.examSubmit.submittedData);
+    const user = useSelector((state) => state.auth.user);
+
     const [isLoading, setIsLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState(''); // State for the search query
+    const [searchQuery, setSearchQuery] = useState('');
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -17,38 +21,35 @@ const UpcomingExams = () => {
 
     useEffect(() => {
         const fetchExams = async () => {
-            setIsLoading(true); // Start loading before fetching data
+            setIsLoading(true);
             try {
-                await dispatch(getSubmitted()); // Fetch submitted data
-                await dispatch(getExams()); // Fetch exams data
+                await dispatch(getSubmitted());
+                await dispatch(getExams());
             } finally {
-                setIsLoading(false); // Ensure loading stops after fetching data
+                setIsLoading(false);
             }
         };
 
         if (!hasFetchedExams.current) {
-            fetchExams(); // Fetch exams only on initial mount
-            hasFetchedExams.current = true; // Mark as fetched
+            fetchExams();
+            hasFetchedExams.current = true;
         }
-    }, [dispatch]); // Removed fetchExams from dependencies
+    }, [dispatch]);
 
-    // Handle view exam
     const handleView = (id) => {
         navigate(`/student/dashboard/exam-details/${id}`);
     };
 
-    // Get today's date in 'YYYY-MM-DD' format for comparison
     const todayDate = formatDateToInput(new Date());
 
-    // Filter and sort upcoming exams
     const upcomingExams = exams
         .filter((exam) => {
-            const examDate = formatDateToInput(new Date(exam.date)); // Format exam date
-            const matchesDate = examDate >= todayDate; // Include only exams with date >= today
-            const matchesSearch = exam.name.toLowerCase().includes(searchQuery.toLowerCase()); // Search match
-            return matchesDate && matchesSearch; // Combine both conditions
+            const examDate = formatDateToInput(new Date(exam.date));
+            const matchesDate = examDate >= todayDate;
+            const matchesSearch = exam.name.toLowerCase().includes(searchQuery.toLowerCase());
+            return matchesDate && matchesSearch;
         })
-        .sort((a, b) => new Date(a.date) - new Date(b.date)); // Sort exams by date in ascending order
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
 
     return (
         <div className="p-4 max-w-7xl mx-auto">
@@ -58,7 +59,6 @@ const UpcomingExams = () => {
                     <p className="text-gray-600">Keep track of your scheduled examinations</p>
                 </div>
 
-                {/* Search Bar */}
                 <div className="mb-4">
                     <input
                         type="text"
@@ -71,14 +71,12 @@ const UpcomingExams = () => {
             </div>
             <hr />
 
-            {/* Check if the user has exam permission */}
             {isLoading ? (
                 <div className="flex justify-center items-center py-12">
                     <FaSpinner className="animate-spin h-12 w-12 text-gray-500" />
                 </div>
             ) : (
                 <>
-                    {/* Show exams only if user has permission */}
                     {user?.role === "student" && user?.examPermission === true ? (
                         upcomingExams.length === 0 ? (
                             <div className="bg-gray-50 p-6 rounded-lg shadow-sm flex flex-col items-center justify-center">
@@ -135,14 +133,12 @@ const UpcomingExams = () => {
                             </div>
                         )
                     ) : user?.role === "admin" ? (
-                        // Show admin content if user is admin
                         <div className="bg-blue-50 p-6 rounded-lg shadow-sm flex flex-col items-center justify-center">
                             <FaBookOpen className="h-12 w-12 text-blue-400 mb-4" />
                             <p className="text-lg font-medium text-blue-600">Admin Dashboard</p>
                             <p className="text-sm text-blue-500">Create and manage exams from the admin panel</p>
                         </div>
                     ) : (
-                        // Show permission denied for students without permission
                         <div className="bg-red-50 p-6 rounded-lg shadow-sm flex flex-col items-center justify-center">
                             <FaUserLock className="h-12 w-12 text-red-400 mb-4" />
                             <p className="text-lg font-medium text-red-600">Exam Access Denied</p>
