@@ -9,7 +9,7 @@ const initialState = {
     error: null,
 };
 
-export const examReducer = (state = initialState, action) => {
+ const examReducer = (state = initialState, action) => {
     switch (action.type) {
         case GET_EXAMS:
             return {
@@ -39,3 +39,4 @@ export const examReducer = (state = initialState, action) => {
             return state;
     }
 };
+export default examReducer; 
