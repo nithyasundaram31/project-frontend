@@ -65,91 +65,93 @@ const UpcomingExams = () => {
                         placeholder="Search exams..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full max-w-xs p-2 border p-2 rounded border-blue-500 rounded-md"
+                        className="w-full max-w-xs p-2 border border-blue-500 rounded-md"
                     />
                 </div>
             </div>
             <hr />
 
             {/* Check if the user has exam permission */}
-            {
-                isLoading ? (
-                    <div className="flex justify-center items-center py-12">
-                        <FaSpinner className="animate-spin h-12 w-12 text-gray-500" />
-                    </div>
-                ) : (
-                    <>
-                        {/* Check if the user has exam permission */}
-                        {user?.role === "student" && user?.examPermission !== true ? (
-                            upcomingExams.length === 0 ? (
-                                <div className="bg-gray-50 p-6 rounded-lg shadow-sm flex flex-col items-center justify-center">
-                                    <FaBookOpen className="h-12 w-12 text-gray-400 mb-4" />
-                                    <p className="text-lg font-medium text-gray-600">No upcoming exams</p>
-                                    <p className="text-sm text-gray-500">When exams are scheduled, they will appear here</p>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 mt-4 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-16">
-                                    {upcomingExams.map((exam, index) => {
-                                        const examDate = formatDateToInput(new Date(exam.date)); // Format exam date
-
-                                        // Check if the user has submitted the exam
-                                        const userSubmission = submittedData?.find(sub => sub.examId._id === exam._id);
-
-                                        return (
-                                            <div
-                                                key={index}
-                                                className="bg-white border border-gray-500 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
-                                            >
-                                                <h2 className="text-xl font-semibold text-gray-900">{exam.name}</h2>
-                                                <div className="grid gap-3 mt-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <FaCalendarAlt className="h-4 w-4 text-gray-500" />
-                                                        <span className="text-gray-600">{examDate}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <FaClock className="h-4 w-4 text-gray-500" />
-                                                        <span className="text-gray-600">{exam.duration + " duration (min)"}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <FaQuestionCircle className="h-4 w-4 text-gray-500" />
-                                                        <span className="text-gray-600">{exam.totalQuestions + " No of Questions"}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <FaPencilAlt className="h-4 w-4 text-gray-500" />
-                                                        <span className="text-gray-600">{exam.totalMarks + " Marks"}</span>
-                                                    </div>
-                                                    {exam.description && (
-                                                        <p className="mt-2 text-sm text-gray-600 truncate max-w-xs">{exam.description}</p>
-                                                    )}
-                                                </div>
-
-                                                <div className="mt-6 text-center">
-                                                    <button
-                                                        className={`px-4 py-2 ${userSubmission ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-indigo-700 text-white font-semibold'} rounded-md transition`}
-                                                        onClick={() => userSubmission ? null : handleView(exam._id)} // Prevent click if already submitted
-                                                        disabled={!!userSubmission} // Disable if there's a submission
-                                                    >
-                                                        {userSubmission ? "Exam Submitted" : (examDate === todayDate ? "Take Exam" : "Wait for the day")}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )
-                        ) : (
-                            <div className="bg-red-50 p-6 rounded-lg shadow-sm flex flex-col items-center justify-center">
-                                <FaUserLock className="h-12 w-12 text-red-400 mb-4" />
-                                <p className="text-lg font-medium text-red-600">Exam Access Denied</p>
-                                <p className="text-sm text-red-500">You do not have permission to take exams at this time. Please contact the admin.</p>
+            {isLoading ? (
+                <div className="flex justify-center items-center py-12">
+                    <FaSpinner className="animate-spin h-12 w-12 text-gray-500" />
+                </div>
+            ) : (
+                <>
+                    {/* Show exams only if user has permission */}
+                    {user?.role === "student" && user?.examPermission === true ? (
+                        upcomingExams.length === 0 ? (
+                            <div className="bg-gray-50 p-6 rounded-lg shadow-sm flex flex-col items-center justify-center">
+                                <FaBookOpen className="h-12 w-12 text-gray-400 mb-4" />
+                                <p className="text-lg font-medium text-gray-600">No upcoming exams</p>
+                                <p className="text-sm text-gray-500">When exams are scheduled, they will appear here</p>
                             </div>
-                        )}
-                    </>
-                )
-            }
+                        ) : (
+                            <div className="grid grid-cols-1 mt-4 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-16">
+                                {upcomingExams.map((exam, index) => {
+                                    const examDate = formatDateToInput(new Date(exam.date));
+                                    const userSubmission = submittedData?.find(sub => sub.examId._id === exam._id);
 
+                                    return (
+                                        <div
+                                            key={index}
+                                            className="bg-white border border-gray-500 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                                        >
+                                            <h2 className="text-xl font-semibold text-gray-900">{exam.name}</h2>
+                                            <div className="grid gap-3 mt-4">
+                                                <div className="flex items-center gap-2">
+                                                    <FaCalendarAlt className="h-4 w-4 text-gray-500" />
+                                                    <span className="text-gray-600">{examDate}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <FaClock className="h-4 w-4 text-gray-500" />
+                                                    <span className="text-gray-600">{exam.duration + " duration (min)"}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <FaQuestionCircle className="h-4 w-4 text-gray-500" />
+                                                    <span className="text-gray-600">{exam.totalQuestions + " No of Questions"}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <FaPencilAlt className="h-4 w-4 text-gray-500" />
+                                                    <span className="text-gray-600">{exam.totalMarks + " Marks"}</span>
+                                                </div>
+                                                {exam.description && (
+                                                    <p className="mt-2 text-sm text-gray-600 truncate max-w-xs">{exam.description}</p>
+                                                )}
+                                            </div>
+
+                                            <div className="mt-6 text-center">
+                                                <button
+                                                    className={`px-4 py-2 ${userSubmission ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-indigo-700 text-white font-semibold'} rounded-md transition`}
+                                                    onClick={() => userSubmission ? null : handleView(exam._id)}
+                                                    disabled={!!userSubmission}
+                                                >
+                                                    {userSubmission ? "Exam Submitted" : (examDate === todayDate ? "Take Exam" : "Wait for the day")}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )
+                    ) : user?.role === "admin" ? (
+                        // Show admin content if user is admin
+                        <div className="bg-blue-50 p-6 rounded-lg shadow-sm flex flex-col items-center justify-center">
+                            <FaBookOpen className="h-12 w-12 text-blue-400 mb-4" />
+                            <p className="text-lg font-medium text-blue-600">Admin Dashboard</p>
+                            <p className="text-sm text-blue-500">Create and manage exams from the admin panel</p>
+                        </div>
+                    ) : (
+                        // Show permission denied for students without permission
+                        <div className="bg-red-50 p-6 rounded-lg shadow-sm flex flex-col items-center justify-center">
+                            <FaUserLock className="h-12 w-12 text-red-400 mb-4" />
+                            <p className="text-lg font-medium text-red-600">Exam Access Denied</p>
+                            <p className="text-sm text-red-500">You do not have permission to take exams at this time. Please contact the admin.</p>
+                        </div>
+                    )}
+                </>
+            )}
         </div>
-
     );
 };
 
