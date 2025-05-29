@@ -41,15 +41,23 @@ export const register = (userData) => async (dispatch) => {
 };
 
 
-// LOGIN
+// LOGIN - FIXED VERSION
 export const login = (userData) => async (dispatch) => {
   try {
     const response = await API.post('/login', userData);
     toast.success(response.data.message || 'Login successful');
-    dispatch({ type: 'LOGIN_SUCCESS', payload: response.data });
+    
+    // Store all necessary data in localStorage
     localStorage.setItem('user', JSON.stringify(response.data.user));
     localStorage.setItem('token', response.data.token);
+    localStorage.setItem('userType', response.data.user.role);  // Added this line
+    localStorage.setItem('userId', response.data.user.id);      // Added this line
+    
+    dispatch({ type: 'LOGIN_SUCCESS', payload: response.data });
     console.log("Login request to API:", userData);
+    console.log("Stored userType:", response.data.user.role);   // Debug log
+    console.log("Stored userId:", response.data.user.id);       // Debug log
+    
     return response.data;
   } catch (error) {
     toast.error(error.response?.data?.message || error.response?.data);
@@ -62,6 +70,8 @@ export const login = (userData) => async (dispatch) => {
 export const logout = () => (dispatch) => {
   localStorage.removeItem('user'); // Clear user data from localStorage
   localStorage.removeItem('token');
+  localStorage.removeItem('userType');    // Added this line
+  localStorage.removeItem('userId');      // Added this line
   localStorage.removeItem('submitedData');
   dispatch({ type: 'LOGOUT' });
   toast.success('Logout successful');
