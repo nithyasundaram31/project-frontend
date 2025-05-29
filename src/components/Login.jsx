@@ -19,6 +19,12 @@ const Login = () => {
         try {
             const response = await dispatch(login(formData));  // Correct usage of dispatch with await            
             if (response) {
+                // FIX: Store user data in localStorage
+                localStorage.setItem('token', response.token);
+                localStorage.setItem('userType', response.user.role);
+                localStorage.setItem('userId', response.user.id);
+                
+                toast.success("Login successful!");
                 setTimeout(() => {
                     if (response?.user?.role === 'student') {
                         navigate('/student/dashboard');
@@ -30,7 +36,7 @@ const Login = () => {
         } catch (error) {
             console.error("Login failed", error);
             toast.error("Login failed, please try again.");
-              navigate('/error');
+            navigate('/error');
         }
     };
 
