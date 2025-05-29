@@ -13,32 +13,34 @@ const StudentsList = () => {
 
     useEffect(() => {
         setIsLoading(true);
-        dispatch(getAllStudents());
-        setIsLoading(false);
+        dispatch(getAllStudents()).finally(() => setIsLoading(false));
     }, [dispatch]);
 
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
         setIsLoading(true);
-        dispatch(deleteStudent(id));
-        dispatch(getAllStudents());
+        await dispatch(deleteStudent(id));
+        await dispatch(getAllStudents());
         setIsLoading(false);
     };
 
-    const togglePermission = (id, currentPermission) => {
-        dispatch(updateExamPermission(id, !currentPermission));
+    const togglePermission = async (id, currentPermission) => {
+        setIsLoading(true);
+        await dispatch(updateExamPermission(id, !currentPermission));
+        await dispatch(getAllStudents());
+        setIsLoading(false);
     };
 
-    //handle view exam
     const handleView = (id) => {
         navigate(`/admin/dashboard/student-result/${id}`);
-    }
+    };
 
-    //handle role
     const handleRole = async (e, id) => {
+        setIsLoading(true);
         const newRole = { role: e.target.value };
         await dispatch(updateRole(newRole, id));
-        dispatch(getAllStudents());
-    }
+        await dispatch(getAllStudents());
+        setIsLoading(false);
+    };
 
     return (
         <div className="p-4">
@@ -47,9 +49,9 @@ const StudentsList = () => {
                 students={students}
                 isLoading={isLoading}
                 togglePermission={togglePermission}
-                onView={(id) => handleView(id)}
-                onDelete={(id) => handleDelete(id)}
-                onRoleChange={(e, id) => handleRole(e, id)}
+                onView={handleView}
+                onDelete={handleDelete}
+                onRoleChange={handleRole}
             />
             <ToastContainer />
         </div>
