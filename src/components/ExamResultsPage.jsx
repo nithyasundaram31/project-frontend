@@ -3,6 +3,9 @@ import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, T
 import { Doughnut, Bar } from 'react-chartjs-2';
 import { FaSpinner } from 'react-icons/fa';
 
+// ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+
+
 // Register the components needed for both Doughnut and Bar charts
 ChartJS.register(
     ArcElement,    // For Doughnut chart
@@ -14,8 +17,6 @@ ChartJS.register(
 );
 
 const ExamResultsPage = ({ recentSubmissions, isLoading }) => {
-
-    // Loading spinner
     if (isLoading) {
         return (
             <div className="flex justify-center items-center py-12">
@@ -24,8 +25,7 @@ const ExamResultsPage = ({ recentSubmissions, isLoading }) => {
         );
     }
 
-    // No submissions found
-    if (!recentSubmissions.length) {
+    if (!recentSubmissions || !recentSubmissions.length) {
         return <div>No submissions found.</div>;
     }
 
@@ -33,16 +33,12 @@ const ExamResultsPage = ({ recentSubmissions, isLoading }) => {
         <div className="container mx-auto p-6">
             {recentSubmissions.map((submission, index) => {
                 const questions = submission.questions || [];
-                const totalMarks = submission.correctAnswers || 0;
-                const totalQuestions = submission.totalQuestions;
-
-                // Count correct and incorrect answers
                 const correctAnswersCount = questions.filter(q => q.isCorrect).length;
+                const totalQuestions = submission.totalQuestions || questions.length;
                 const incorrectAnswersCount = totalQuestions - correctAnswersCount;
+                const scorePercentage = totalQuestions > 0 ? ((correctAnswersCount / totalQuestions) * 100).toFixed(2) : 0;
 
-                const scorePercentage = totalQuestions > 0 ? ((totalMarks / totalQuestions) * 100).toFixed(2) : 0;
-
-                // Data for Doughnut Chart
+                // Doughnut chart data
                 const doughnutData = {
                     labels: ['Correct', 'Incorrect'],
                     datasets: [{
@@ -52,40 +48,31 @@ const ExamResultsPage = ({ recentSubmissions, isLoading }) => {
                     }]
                 };
 
-                const doughnutOptions = {
-                    maintainAspectRatio: false, // Makes the chart resize properly
-                };
+                const doughnutOptions = { maintainAspectRatio: false };
 
-                // Data for Bar Chart (Detailed Results)
+                // Bar chart data (only 'Your Answers' dataset for clarity)
                 const barData = {
                     labels: questions.map((q, i) => `Q${i + 1}`),
                     datasets: [{
-                        label: 'Your Answers',
+                        label: 'Correctness',
                         data: questions.map(q => (q.isCorrect ? 1 : 0)),
-                        backgroundColor: '#4CAF50',
-                    }, {
-                        label: 'Correct Answers',
-                        data: questions.map(q => (q.isCorrect ? 0 : 1)),
-                        backgroundColor: '#FF6384',
+                        backgroundColor: questions.map(q => q.isCorrect ? '#4CAF50' : '#FF6384'),
                     }]
                 };
 
                 const barOptions = {
                     scales: {
                         x: { beginAtZero: true },
-                        y: { beginAtZero: true }
+                        y: { beginAtZero: true, ticks: { stepSize: 1, max: 1, min: 0 } }
                     }
                 };
 
                 return (
-                    <div key={submission._id} className="mb-10">
-                        {/* Header Section */}
+                    <div key={submission._id || index} className="mb-10">
                         <header className="bg-gray-800 text-white p-4">
                             <h1 className="text-2xl">Exam Results: {submission.examId?.name}</h1>
                             <p className="text-sm">Submitted on: {new Date(submission.submittedAt).toLocaleString()}</p>
                         </header>
-
-                        {/* Overall Score Section */}
                         <div className="flex items-center justify-between p-6 bg-white shadow rounded-lg mt-4">
                             <div>
                                 <h2 className="text-lg font-medium">Overall Score</h2>
@@ -98,14 +85,11 @@ const ExamResultsPage = ({ recentSubmissions, isLoading }) => {
                                 <Doughnut data={doughnutData} options={doughnutOptions} />
                             </div>
                         </div>
-
-                        {/* Detailed Results Section */}
                         <div className="mt-6">
                             <h3 className="text-lg font-medium">Detailed Results</h3>
-                            <div className="w-full h-80 flex justify-center "> {/* Adjusted size */}
-                                <Bar data={barData} options={barOptions} width={200} height={100} />
+                            <div className="w-full h-80 flex justify-center">
+                                <Bar data={barData} options={barOptions} />
                             </div>
-                            {/* <Bar data={barData} options={barOptions} width={5} height={5} /> */}
                             <table className="mt-4 w-full border shadow-lg">
                                 <thead className="bg-gray-100">
                                     <tr>
@@ -131,8 +115,6 @@ const ExamResultsPage = ({ recentSubmissions, isLoading }) => {
                                 </tbody>
                             </table>
                         </div>
-
-                        {/* Summary and Recommendations Section */}
                         <div className="mt-6 bg-gray-50 p-4 rounded-lg">
                             <h3 className="text-lg font-medium">Summary</h3>
                             <p>Your performance indicates a strong understanding of the material. However, consider reviewing topics that you found challenging.</p>

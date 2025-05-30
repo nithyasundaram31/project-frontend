@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,9 +15,15 @@ const Header = (props) => {
     const { user } = useSelector((state) => state.auth);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [userName, setUserName] = useState('');
+    const dropdownRef = useRef(null);
 
+    // Profile Navigation - use absolute path (role-based)
     const handleProfileClick = () => {
-        navigate('profile');
+        if (user?.role) {
+            navigate(`/${user.role}/dashboard/profile`);
+        } else {
+            navigate('/profile');
+        }
         setDropdownOpen(false);
     };
 
@@ -36,7 +42,22 @@ const Header = (props) => {
 
     useEffect(() => {
         setUserName(getInitials(user?.name));
-    }, [user])
+    }, [user]);
+
+    // Close dropdown on outside click
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setDropdownOpen(false);
+            }
+        }
+        if (dropdownOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [dropdownOpen]);
 
     return (
         <header className="col-span-full flex justify-between items-center sticky top-0 p-2 text-white bg-gradient-to-r from-blue-500 to-indigo-700">
@@ -54,52 +75,60 @@ const Header = (props) => {
             {/* Left Logo */}
             <div
                 className="flex items-center text-sm font-bold p-2 rounded cursor-pointer"
-                onClick={() => navigate('/')}
+                onClick={() => {
+                    if (user?.role) {
+                        navigate(`/${user.role}/dashboard`);
+                    } else {
+                        navigate('/');
+                    }
+                }}
             >
                 <img src={logo} alt="logo" className="mr-2 rounded" width={28} />
                 <h2>Assessment Platform</h2>
             </div>
 
             {/* Right Profile Section */}
-            <div className="relative">
-                <div className="flex items-center justify-evenly">
-                    <span className='mr-4 cursor-pointer hover:text-lg'><FaBell /></span>
-                    <span className='mr-2'> {"Hi,  " + (user?.name || '').toUpperCase()}</span>
-                    <span
-                        className="flex items-center justify-center w-6 h-6 bg-white font-bold text-black rounded-full z-50"
-                    > {userName}</span>
-                    {/* Dropdown Toggle */}
-                    <span
-                        className='ml-4 cursor-pointer'
-                        onClick={() => setDropdownOpen(!dropdownOpen)}
-                    >
-                        {dropdownOpen ? (
-                            <FaCaretUp className="text-xl" />
-                        ) : (
-                            <FaCaretDown className="text-xl" />
-                        )}
-                    </span>
-                </div>
-
-                {/* Dropdown Menu */}
-                {dropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-lg z-50">
-                        <div
-                            className="p-2 hover:bg-gray-200 cursor-pointer"
-                            onClick={handleProfileClick}
+            {user && (
+                <div className="relative" ref={dropdownRef}>
+                    <div className="flex items-center justify-evenly">
+                        <span className='mr-4 cursor-pointer hover:text-lg'><FaBell /></span>
+                        <span className='mr-2'> {"Hi,  " + (user?.name || '').toUpperCase()}</span>
+                        <span
+                            className="flex items-center justify-center w-6 h-6 bg-white font-bold text-black rounded-full z-50"
+                        > {userName}</span>
+                        {/* Dropdown Toggle */}
+                        <span
+                            className='ml-4 cursor-pointer'
+                            onClick={() => setDropdownOpen(!dropdownOpen)}
                         >
-                            My Profile
-                        </div>
-                        <hr />
-                        <div
-                            className="p-2 hover:bg-gray-200 cursor-pointer"
-                            onClick={handleLogout}
-                        >
-                            Logout
-                        </div>
+                            {dropdownOpen ? (
+                                <FaCaretUp className="text-xl" />
+                            ) : (
+                                <FaCaretDown className="text-xl" />
+                            )}
+                        </span>
                     </div>
-                )}
-            </div>
+
+                    {/* Dropdown Menu */}
+                    {dropdownOpen && (
+                        <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-lg z-50">
+                            <div
+                                className="p-2 hover:bg-gray-200 cursor-pointer"
+                                onClick={handleProfileClick}
+                            >
+                                My Profile
+                            </div>
+                            <hr />
+                            <div
+                                className="p-2 hover:bg-gray-200 cursor-pointer"
+                                onClick={handleLogout}
+                            >
+                                Logout
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
         </header>
     );
 };

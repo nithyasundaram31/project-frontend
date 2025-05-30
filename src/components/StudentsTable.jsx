@@ -1,20 +1,19 @@
 import { FaEye, FaSpinner, FaTrash, FaLock, FaLockOpen } from "react-icons/fa";
 
 const StudentTable = ({ students, isLoading, togglePermission, onDelete, onView, onRoleChange }) => {
-
     return (
         <div className="container p-4 max-w-full overflow-x-auto">
             {isLoading ? (
                 <div className="text-center">
-                    <FaSpinner className="animate-spin text-gray-500" size={24} /> {/* Spinner icon */}
+                    <FaSpinner className="animate-spin text-gray-500" size={24} />
                     <p className="text-gray-500">Loading...</p>
                 </div>
             ) : (
                 <>
                     {students && students.length > 0 ? (
                         <div className="overflow-x-auto shadow-lg">
-                            <table className="min-w-full bg-white border border-gray-300 rounded-lg ">
-                                <thead className="overflow-x-auto">
+                            <table className="min-w-full bg-white border border-gray-300 rounded-lg">
+                                <thead>
                                     <tr className="bg-blue-500 text-white text-sm">
                                         <th className="py-2 px-4 border">SL No</th>
                                         <th className="py-2 px-4 border">Name</th>
@@ -25,7 +24,7 @@ const StudentTable = ({ students, isLoading, togglePermission, onDelete, onView,
                                         <th className="py-2 px-4 border">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody className="overflow-x-auto">
+                                <tbody>
                                     {students.map((student, index) => (
                                         <tr key={student._id} className="hover:bg-gray-50">
                                             <td className="px-4 py-2 border text-center">{index + 1}</td>
@@ -34,25 +33,21 @@ const StudentTable = ({ students, isLoading, togglePermission, onDelete, onView,
                                             <td className="px-4 py-2 border text-center">
                                                 <button
                                                     onClick={() => togglePermission(student._id, student.examPermission)}
-                                                    className={`px-2 py-1 w-1/2 rounded ${!student.examPermission ? 'bg-green-500' : 'bg-red-500'
+                                                    className={`px-2 py-1 rounded ${!student.examPermission ? 'bg-green-500' : 'bg-red-500'
                                                         } text-white`}
-                                                    aria-label="Edit"
+                                                    aria-label="Toggle Exam Permission"
                                                 >
                                                     {student.examPermission ? (
-                                                        <>
-                                                            <FaLock className="mx-auto text-lg" />
-                                                        </>
+                                                        <FaLock className="mx-auto text-lg" />
                                                     ) : (
-                                                        <>
-                                                            <FaLockOpen className="mx-auto text-lg" />
-                                                        </>
+                                                        <FaLockOpen className="mx-auto text-lg" />
                                                     )}
                                                 </button>
                                             </td>
                                             <td className="px-4 py-2 border text-center">
                                                 <select
-                                                    value={student.role}  // Assuming `question.role` contains the current role
-                                                    onChange={(e) => onRoleChange(e, student._id)} // Function to handle role change
+                                                    value={student.role}
+                                                    onChange={(e) => onRoleChange(e, student._id)}
                                                     className="border border-gray-300 rounded p-1"
                                                 >
                                                     <option value="student">Student</option>
@@ -63,7 +58,7 @@ const StudentTable = ({ students, isLoading, togglePermission, onDelete, onView,
                                                 <button
                                                     onClick={() => onView(student._id)}
                                                     className="text-blue-500 hover:text-blue-700 mr-3"
-                                                    aria-label="View"
+                                                    aria-label="View Result"
                                                 >
                                                     <FaEye />
                                                 </button>
@@ -91,9 +86,8 @@ const StudentTable = ({ students, isLoading, togglePermission, onDelete, onView,
                         <strong>Note:</strong> This table only lists students. If you change a student's role to admin, they will no longer appear in this list.
                     </p>
                 </>
-            )
-            }
-        </div >
+            )}
+        </div>
     );
 };
 

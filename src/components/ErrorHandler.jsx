@@ -1,4 +1,3 @@
-// ErrorHandler.js
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -6,7 +5,7 @@ const ErrorHandler = ({ error }) => {
     const navigate = useNavigate();
 
     React.useEffect(() => {
-        if (!error.response) {
+        if (!error?.response) {
             // Network error
             navigate('/error'); // Navigate to the ErrorPage
         } else if (error.response.status >= 500) {
@@ -14,7 +13,9 @@ const ErrorHandler = ({ error }) => {
             navigate('/error'); // Navigate to the ErrorPage
         } else {
             // Handle other errors (e.g., validation errors)
-            console.error(error.response.data.message || "An error occurred");
+            // Show error message or log it as needed
+            // You could show a toast or inline error here if you wish
+            console.error(error.response.data?.message || "An error occurred");
         }
     }, [error, navigate]);
 

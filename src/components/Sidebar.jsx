@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { FaHome, FaUser, FaCalendarDay, FaUserGraduate, FaRegQuestionCircle, FaUserCircle, FaChartLine } from 'react-icons/fa'; // Icons from react-icons
+import { FaHome, FaUser, FaCalendarDay, FaUserGraduate, FaRegQuestionCircle, FaUserCircle, FaChartLine } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 
 const Sidebar = (props) => {
@@ -10,11 +10,7 @@ const Sidebar = (props) => {
 
     // Check if user is admin
     useEffect(() => {
-        if (user && user.role === "admin") {
-            setIsAdmin(true);
-        } else {
-            setIsAdmin(false);
-        }
+        setIsAdmin(user?.role === "admin");
     }, [user]);
 
     return (
@@ -32,23 +28,22 @@ const Sidebar = (props) => {
                             <span className="mt-3 text-lg uppercase font-semibold">{user?.role}</span>
                             <span className="mt-3 text-sm">{user?.email}</span>
                         </>
-                    ) : ("")}
+                    ) : null}
                 </div>
                 <div className="flex flex-col h-full">
-                    {/* Sidebar Items */}
                     <nav className="flex-1 p-4 space-y-4">
                         <NavItem icon={<FaHome />} name="Dashboard" path="/" />
-                        <NavItem icon={<FaUser />} name="Profile" path="profile" />
+                        <NavItem icon={<FaUser />} name="Profile" path="/profile" />
                         {isAdmin ? (
                             <>
-                                <NavItem icon={<FaCalendarDay />} name="Exams" path="exams" />
-                                <NavItem icon={<FaRegQuestionCircle />} name="Question Banks" path="questions" />
-                                <NavItem icon={<FaUserGraduate />} name="Students List" path="students" />
+                                <NavItem icon={<FaCalendarDay />} name="Exams" path="/exams" />
+                                <NavItem icon={<FaRegQuestionCircle />} name="Question Banks" path="/questions" />
+                                <NavItem icon={<FaUserGraduate />} name="Students List" path="/students" />
                             </>
                         ) : (
                             <>
-                                <NavItem icon={<FaCalendarDay />} name="Exams" path="exams" />
-                                <NavItem icon={<FaChartLine />} name="Results" path="results" />
+                                <NavItem icon={<FaCalendarDay />} name="Exams" path="/exams" />
+                                <NavItem icon={<FaChartLine />} name="Results" path="/results" />
                             </>
                         )}
                     </nav>
@@ -58,7 +53,6 @@ const Sidebar = (props) => {
     );
 };
 
-// Individual Nav Item component
 const NavItem = ({ icon, name, path }) => {
     return (
         <NavLink

@@ -34,7 +34,6 @@ const StudentResult = () => {
     return (
       <>
         <div className="flex justify-center items-center py-12">
-          {/* Check if the error has an 'error' field and display it */}
           <p className="text-red-600">{error.error || "No results found for this user."}</p>
         </div>
         <div> <GoBackButton /></div>
@@ -42,7 +41,7 @@ const StudentResult = () => {
     );
   }
 
-  if (!results) {
+  if (!results || !results.user) {
     return <p>No student results found.</p>;
   }
 
@@ -54,21 +53,19 @@ const StudentResult = () => {
         <h2 className="text-xl font-semibold mb-2">Student Profile</h2>
         <p className="text-sm"><strong>Email:</strong> {results?.user?.email}</p>
         <p className="text-sm"><strong>Name:</strong> {results?.user?.name}</p>
-        <p className="text-sm"><strong>Gender:</strong> {results?.user?.profile?.gender ? results?.user?.profile?.gender : "-"}</p>
+        <p className="text-sm"><strong>Gender:</strong> {results?.user?.profile?.gender || "-"}</p>
         <p className="text-sm"><strong>Date of Birth:</strong> {results?.user?.profile?.dob ? new Date(results?.user?.profile?.dob).toLocaleDateString() : "-"}</p>
-        <p className="text-sm"><strong>Address:</strong> {results?.user?.profile?.address ? results?.user?.profile?.address : "-"}</p>
+        <p className="text-sm"><strong>Address:</strong> {results?.user?.profile?.address || "-"}</p>
       </div>
 
       <hr className="my-4" />
 
-      {results.length === 0 ? (
+      {results?.results?.length === 0 ? (
         <p className="text-center text-lg text-red-600">No exam results found.</p>
       ) : (
-        results?.results.map((result) => (
+        results?.results?.map((result) => (
           <div key={result._id} className="mb-6 border p-4 rounded-lg shadow hover:shadow-md transition-shadow duration-300">
-            <h2 className="text-lg font-medium mb-2">Exam: {result.exam.name}</h2>
-
-            {/* Responsive grid for mobile, tablet, and desktop */}
+            <h2 className="text-lg font-medium mb-2">Exam: {result.exam?.name}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <p><strong>Exam ID:</strong> {result.examId}</p>
               <p><strong>Submitted At:</strong> {new Date(result.submittedAt).toLocaleString()}</p>
@@ -84,12 +81,10 @@ const StudentResult = () => {
               </p>
             </div>
           </div>
-
         ))
       )}
       <GoBackButton />
     </div>
-
   );
 };
 
