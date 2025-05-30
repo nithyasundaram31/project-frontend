@@ -1,30 +1,10 @@
-import axios from 'axios';
+import instance from '../../services/instance';
 import { toast } from 'react-toastify';
 
-// Base configuration for Axios
-const API = axios.create({
-     baseURL: `${import.meta.env.VITE_BACKEND_URL}/api/students`
-});
-
-// Add a request interceptor
-API.interceptors.request.use(
-    (req) => {
-        const token = localStorage.getItem('token');
-
-        if (token) {
-            req.headers['Content-Type'] = 'application/json';
-            req.headers['Authorization'] = `Bearer ${token}`;
-        }
-        return req;
-    },
-    (error) => {
-        return Promise.reject(error);
-    }
-);
-
+// Get all students
 export const getAllStudents = () => async (dispatch) => {
     try {
-        const { data } = await API.get('/');
+        const { data } = await instance.get('/api/students/');
         dispatch({ type: 'GET_ALL_STUDENTS', payload: data });
         return data;
     } catch (error) {
@@ -38,9 +18,10 @@ export const getAllStudents = () => async (dispatch) => {
     }
 };
 
+// Delete student
 export const deleteStudent = (id) => async (dispatch) => {
     try {
-        const { data } = await API.delete(`/${id}`);
+        const { data } = await instance.delete(`/api/students/${id}`);
         toast.success(data?.message || 'Student deleted successfully');
         dispatch({ type: 'DELETE_STUDENT', payload: id });
         return data;
@@ -55,9 +36,10 @@ export const deleteStudent = (id) => async (dispatch) => {
     }
 };
 
+// Update exam permission
 export const updateExamPermission = (id, permission) => async (dispatch) => {
     try {
-        const { data } = await API.put(`/permission/${id}`, { examPermission: permission });
+        const { data } = await instance.put(`/api/students/permission/${id}`, { examPermission: permission });
         toast.success(data?.message || 'Permission updated successfully');
         dispatch({ type: 'UPDATE_EXAM_PERMISSION', payload: { id, permission } });
         return data;
@@ -72,10 +54,10 @@ export const updateExamPermission = (id, permission) => async (dispatch) => {
     }
 };
 
-//create students activities
+// Create students activity
 export const createStudentsActivity = (activityData) => async (dispatch) => {
     try {
-        const { data } = await API.post('/activity', activityData);
+        const { data } = await instance.post('/api/students/activity', activityData);
         dispatch({ type: 'CREATE_STUDENTS_ACTIVITY', payload: data });
         return data;
     } catch (error) {
@@ -89,9 +71,10 @@ export const createStudentsActivity = (activityData) => async (dispatch) => {
     }
 };
 
+// Get students activity
 export const getStudentsActivity = () => async (dispatch) => {
     try {
-        const { data } = await API.get('/activity');
+        const { data } = await instance.get('/api/students/activity');
         dispatch({ type: 'GET_STUDENTS_ACTIVITY', payload: data });
         return data;
     } catch (error) {
@@ -105,9 +88,10 @@ export const getStudentsActivity = () => async (dispatch) => {
     }
 };
 
+// Create proctor incident
 export const createProctor = (proctorData) => async (dispatch) => {
     try {
-        const { data } = await API.post('/proctor', proctorData);
+        const { data } = await instance.post('/api/students/proctor', proctorData);
         dispatch({ type: 'CREATE_PROCTOR_INCIDENT', payload: data });
         return data;
     } catch (error) {
@@ -121,9 +105,10 @@ export const createProctor = (proctorData) => async (dispatch) => {
     }
 };
 
+// Get proctor incident by ID
 export const getProctor = (id) => async (dispatch) => {
     try {
-        const { data } = await API.get(`/proctor/${id}`);
+        const { data } = await instance.get(`/api/students/proctor/${id}`);
         dispatch({
             type: 'GET_PROCTOR_INCIDENT', 
             payload: data.proctor
@@ -131,12 +116,10 @@ export const getProctor = (id) => async (dispatch) => {
         return data;
     } catch (error) {
         console.error('Get proctor incident error:', error);
-        
         let errorMessage = 'Failed to load proctoring data. Please try again.';
         if (error?.response?.status === 404) {
             errorMessage = 'No proctoring data found for this exam.';
         }
-        
         toast.error(error?.response?.data?.message || errorMessage);
         dispatch({ 
             type: 'GET_PROCTOR_ERROR', 
@@ -146,10 +129,10 @@ export const getProctor = (id) => async (dispatch) => {
     }
 };
 
-//handle role change
+// Update role
 export const updateRole = (role, id) => async (dispatch) => {
     try {
-        const response = await API.put(`/role/${id}`, role);
+        const response = await instance.put(`/api/students/role/${id}`, role);
         toast.success(response?.data?.message || 'Role updated successfully');
         dispatch({
             type: 'UPDATE_ROLE', 
