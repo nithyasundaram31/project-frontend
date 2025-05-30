@@ -14,121 +14,116 @@ const ExamInterface = () => {
     const navigate = useNavigate();
     const hasFetchedExams = useRef(false);
 
-    const { id } = useParams(); // Get the exam ID from the URL
+    const { id } = useParams();
     const { examDetails } = useSelector(state => state.exams);
-    const { examData, questions } = examDetails;
+    const { examData = {}, questions = [] } = examDetails || {};
     const { user } = useSelector((state) => state.auth);
 
     const [answers, setAnswers] = useState({});
     const [timeLeft, setTimeLeft] = useState(null);
     const webcamRef = useRef(null);
     const [warningCount, setWarningCount] = useState(0);
-    const [examStatus, setExamStatus] = useState('started'); // waiting, started, submitted
+    const [examStatus, setExamStatus] = useState('started');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Initialize exam and verify requirements
-    const initializeExam = useCallback(async () => {
-        try {
-            let duration = examData.duration;
-            setTimeLeft(duration * 60); // Convert minutes to seconds
+    // Get exam details and set loading
+    useEffect(() => {
+        const fetchExam = async () => {
+            setLoading(true);
+            try {
+                await dispatch(getExamById(id));
+            } catch (err) {
+                setError('Failed to fetch exam. Please try again.');
+            }
+            setLoading(false);
+        };
+        if (!hasFetchedExams.current) {
+            fetchExam();
+            hasFetchedExams.current = true;
+        }
+    }, [dispatch, id]);
 
-            // Request necessary permissions
-            await Promise.all([
-                navigator.mediaDevices.getUserMedia({ video: true }),
-                document.documentElement.requestFullscreen()
-            ]);
+    // When examData loads, initialize exam
+    useEffect(() => {
+        const initializeExam = async () => {
+            if (!examData.duration) return;
+            setTimeLeft(examData.duration * 60);
 
-        } catch (error) {
-            // setError(error);
-            console.error('Failed to fetch exams:', error);
+            try {
+                await navigator.mediaDevices.getUserMedia({ video: true });
+            } catch (err) {
+                setError('Cannot access camera. Please allow webcam permissions.');
+                return;
+            }
+            try {
+                await document.documentElement.requestFullscreen();
+            } catch (err) {
+                setError('Fullscreen permission denied. Please allow fullscreen.');
+            }
+        };
+        if (examData && examData.duration) {
+            initializeExam();
         }
     }, [examData]);
 
-    const fetchExams = useCallback(async () => {
-        try {
-            setLoading(true);  // Set loading true when fetching starts
-            await dispatch(getExamById(id)); // Fetch exam by ID
-           if (examData) {
-    await initializeExam();
-}         // Initialize exam
-        } catch (error) {
-            setError(error);
-            console.error('Failed to fetch exams:', error);
-        } finally {
-            setLoading(false);  // Set loading to false once fetch is complete
-        }
-    }, [dispatch, id, initializeExam]);
-
+    // Timer countdown logic
     useEffect(() => {
-        const fetchData = async () => {
-            if (!hasFetchedExams.current) {
-                await fetchExams();  // Fetch exams only on initial mount
-                hasFetchedExams.current = true; // Mark as fetched
-            }
-        };
-        fetchData();  // Call the async fetch function
-    }, [dispatch, fetchExams]);
+        if (examStatus === 'started' && timeLeft > 0) {
+            const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+            return () => clearInterval(timer);
+        } else if (timeLeft === 0 && examStatus === 'started') {
+            submitExams();
+        }
+    }, [timeLeft, examStatus]); // submitExams will be redeclared below
 
+    // Submit exam logic
     const submitExams = useCallback(async () => {
         try {
-            const submitData = {
-                examId: id,
-                answers,
-                warningCount,
-            }
-            await dispatch(submitExam(submitData));
-            let activityData = {
-                acivityType: "submitted exam",
+            if (!user || !examData) return;
+            setExamStatus('submitted');
+            await dispatch(submitExam({ examId: id, answers, warningCount }));
+            // Typo fixed: activityType
+            await dispatch(createStudentsActivity({
+                activityType: "submitted exam",
                 examId: id,
                 exam: examData.name,
                 name: user.name,
                 email: user.email,
                 userId: user.id
+            }));
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
             }
-            await dispatch(createStudentsActivity(activityData));
-            setExamStatus('submitted');
-            document.exitFullscreen();
         } catch (error) {
-            console.error('Failed to submit exam:', error);
+            toast.error('Failed to submit exam.');
+            setError('Failed to submit exam.');
         }
     }, [warningCount, id, examData, user, answers, dispatch]);
 
-    // Timer countdown
-    useEffect(() => {
-        if (examStatus === 'started' && timeLeft > 0) {
-            const timer = setInterval(() => {
-                setTimeLeft(prev => prev - 1);
-            }, 1000);
-            return () => clearInterval(timer);
-        } else if (timeLeft === 0) {
-            submitExams();
-        }
-    }, [timeLeft, examStatus, submitExams]);
-
+    // Suspicious activity (fullscreen exit, etc)
     const handleSuspiciousActivity = useCallback(async (type) => {
         try {
-            const proctorData = {
-                type: type,
+            if (!user || !examData) return;
+            await dispatch(createProctor({
+                type,
                 timestamp: new Date(),
                 examId: id,
                 exam: examData.name,
                 name: user.name,
                 email: user.email,
                 userId: user.id
-            }
-            await dispatch(createProctor(proctorData))
-            toast.success(type);
-            await setWarningCount(prevWarningCount => {
-                const newWarningCount = prevWarningCount + 1;
-                if (newWarningCount >= 3) {
+            }));
+            toast.warn(type);
+            setWarningCount(prev => {
+                const newCount = prev + 1;
+                if (newCount >= 3) {
                     submitExams();
                 }
-                return newWarningCount;
+                return newCount;
             });
-
         } catch (error) {
-            console.error('Failed to report suspicious activity:', error);
+            toast.error('Proctoring error');
         }
     }, [id, examData, user, dispatch, submitExams]);
 
@@ -136,100 +131,64 @@ const ExamInterface = () => {
     useEffect(() => {
         const handleFullscreenChange = () => {
             if (!document.fullscreenElement && examStatus === 'started') {
-                handleSuspiciousActivity("Left fullscreen mode");  // Call suspicious activity handler if fullscreen is exited
+                handleSuspiciousActivity("Left fullscreen mode");
             }
         };
-
         document.addEventListener('fullscreenchange', handleFullscreenChange);
         return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
     }, [examStatus, handleSuspiciousActivity]);
 
-    const sendActivityData = useCallback(async (screenshot) => {
-        try {
-            const proctorData = {
-                type: 'suspicious',
-                screenshot,
-                timestamp: new Date(),
-                tabFocused: document.hasFocus(),
-                examId: id,
-                exam: examData.name,
-                name: user.name,
-                email: user.email,
-                userId: user.id
-            }
-            await dispatch(createProctor(proctorData))
-        } catch (error) {
-            console.error('Failed to send activity data:', error);
-        }
-    }, [id, dispatch, examData, user]);
-
-    // Periodic screenshot and activity monitoring
+    // Screenshot proctoring every 30s
     useEffect(() => {
         if (examStatus === 'started') {
             const monitoring = setInterval(async () => {
-                // Capture the full window screenshot using html2canvas
-                const fullWindowScreenshot = await html2canvas(document.body)
-                    .then(canvas => canvas.toDataURL("image/png")) // Convert the canvas to a data URL (image)
-                    .catch(error => console.error("Error capturing screenshot:", error));
-
-                if (fullWindowScreenshot) {
-                    // Send the captured screenshot to the server
-                    sendActivityData(fullWindowScreenshot);
+                try {
+                    const fullWindowScreenshot = await html2canvas(document.body).then(c => c.toDataURL("image/png"));
+                    if (fullWindowScreenshot && user && examData) {
+                        await dispatch(createProctor({
+                            type: 'suspicious',
+                            screenshot: fullWindowScreenshot,
+                            timestamp: new Date(),
+                            tabFocused: document.hasFocus(),
+                            examId: id,
+                            exam: examData.name,
+                            name: user.name,
+                            email: user.email,
+                            userId: user.id
+                        }));
+                    }
+                } catch (e) {
+                    // ignore screenshot error
                 }
-            }, 30000); // Every 30 seconds
-
+            }, 30000);
             return () => clearInterval(monitoring);
         }
-    }, [examStatus, sendActivityData]);
+    }, [examStatus, dispatch, examData, user, id]);
 
-
-    //handle all answers from student
-    const handleAnswerChange = (questionId, answer, questionType) => {
-        setAnswers(prev => {
-            const updatedAnswers = { ...prev, [questionId]: answer };
-            // Clear the answer for the other question type (either "multiple-choice" or "true-false")
-            for (let key in prev) {
-                if (key !== questionId && (questionType === 'multiple-choice' || questionType === 'true-false')) {
-                    // Assuming questions are grouped in a way where you can identify if the question type is "true-false" or "multiple-choice"
-                    const otherQuestion = questions.find(q => q._id === key);
-
-                    // If another question type is different from the current one, clear its answer
-                    if (otherQuestion?.questionType && otherQuestion.questionType !== questionType) {
-                        updatedAnswers[key] = '';
-                    }
-                }
-            }
-            return updatedAnswers;
-        });
+    // Handle answer update
+    const handleAnswerChange = (questionId, answer) => {
+        setAnswers(prev => ({ ...prev, [questionId]: answer }));
     };
 
+    // Exit fullscreen and go back
     const existFullscreen = useCallback(() => {
-        if (document.fullscreenElement) { // Check if the document is in fullscreen mode
-            document.exitFullscreen()
-                .then(() => {
-                    console.log("Exited fullscreen mode successfully.");
-                })
-                .catch((err) => {
-                    console.error("Error exiting fullscreen mode:", err);
-                });
-            navigate(-1);
+        if (document.fullscreenElement) {
+            document.exitFullscreen().finally(() => navigate(-1));
         } else {
-            console.log("Not in fullscreen mode.");
-            navigate(-1); // Navigate back
+            navigate(-1);
         }
     }, [navigate]);
 
-    // Show error message if there was a problem fetching the data
     if (error) {
         return (
             <div className="p-6 text-center">
                 <p className="text-red-500">{error}</p>
-                <GoBackButton onClick={() => existFullscreen()} />
+                <GoBackButton onClick={existFullscreen} />
             </div>
         );
     }
 
-    if (loading || !examData) {
+    if (loading || !examData.name) {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <div className="text-lg">Loading exam...</div>
@@ -250,7 +209,8 @@ const ExamInterface = () => {
                         </div>
                     </div>
 
-                    <div className="fixed top-4 left-4 w-48 opacity-0 pointer-events-none">
+                    {/* Webcam can be shown or hidden as per your proctoring policy */}
+                    <div className="fixed top-4 left-4 w-48 opacity-20 pointer-events-none">
                         <Webcam
                             ref={webcamRef}
                             audio={false}
@@ -261,23 +221,21 @@ const ExamInterface = () => {
 
                     <div className="max-w-3xl mx-auto mt-20 bg-white p-6 rounded shadow">
                         <h1 className="text-2xl font-bold mb-6">{examData.name}</h1>
-                        {/* questions list */}
                         {questions.map((question, index) => (
-                            <div key={question.id} className="mb-8">
+                            <div key={question._id} className="mb-8">
                                 <p className="font-semibold mb-4">
                                     {index + 1}. {question.question}
                                 </p>
-
                                 {question.questionType === "multiple-choice" ? (
                                     <div className="space-y-2">
                                         {question.options.map((option, optIndex) => (
                                             <label key={optIndex} className="flex items-center space-x-2">
                                                 <input
                                                     type="radio"
-                                                    name={`question-${question.id}`}
+                                                    name={`question-${question._id}`}
                                                     value={option}
-                                                    onChange={(e) => handleAnswerChange(question.id, e.target.value, "multiple-choice")}
-                                                    checked={answers[question.id] === option}
+                                                    onChange={(e) => handleAnswerChange(question._id, e.target.value)}
+                                                    checked={answers[question._id] === option}
                                                     className="form-radio"
                                                 />
                                                 <span>{option}</span>
@@ -291,10 +249,10 @@ const ExamInterface = () => {
                                             <label key={option} className="flex items-center space-x-2">
                                                 <input
                                                     type="radio"
-                                                    name={`question-${question.id}`}
+                                                    name={`question-${question._id}`}
                                                     value={option}
-                                                    onChange={(e) => handleAnswerChange(question.id, e.target.value, "true-false")}
-                                                    checked={answers[question.id] === option}
+                                                    onChange={(e) => handleAnswerChange(question._id, e.target.value)}
+                                                    checked={answers[question._id] === option}
                                                     className="form-radio"
                                                 />
                                                 <span>{option}</span>
@@ -306,14 +264,13 @@ const ExamInterface = () => {
                                     <textarea
                                         className="w-full p-2 border rounded"
                                         rows={4}
-                                        value={answers[question.id] || ''}
-                                        onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                                        value={answers[question._id] || ''}
+                                        onChange={(e) => handleAnswerChange(question._id, e.target.value)}
                                         placeholder="Enter your answer here..."
                                     />
                                 )}
                             </div>
                         ))}
-
                         <button
                             onClick={submitExams}
                             className="bg-green-600 text-white px-8 py-3 rounded hover:bg-green-700 mb-8"
