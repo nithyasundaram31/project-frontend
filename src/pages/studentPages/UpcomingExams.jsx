@@ -7,9 +7,9 @@ import { useNavigate } from 'react-router-dom';
 import { getSubmitted } from '../../redux/actions/submitExam';
 
 const UpcomingExams = () => {
-    // ✅ Corrected selectors to pull from proper reducers
-    const exams = useSelector((state) => state.exams.exams);
-    const submittedData = useSelector((state) => state.examSubmit.submittedData);
+    // Defensive default to [] if null/undefined
+    const exams = useSelector((state) => state.exams.exams) || [];
+    const submittedData = useSelector((state) => state.examSubmit.submittedData) || [];
     const user = useSelector((state) => state.auth.user);
 
     const [isLoading, setIsLoading] = useState(true);
@@ -58,7 +58,6 @@ const UpcomingExams = () => {
                     <h1 className="text-2xl font-bold text-blue-500">Exams</h1>
                     <p className="text-gray-600">Keep track of your scheduled examinations</p>
                 </div>
-
                 <div className="mb-4">
                     <input
                         type="text"
@@ -86,13 +85,13 @@ const UpcomingExams = () => {
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 mt-4 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-16">
-                                {upcomingExams.map((exam, index) => {
+                                {upcomingExams.map((exam) => {
                                     const examDate = formatDateToInput(new Date(exam.date));
                                     const userSubmission = submittedData?.find(sub => sub.examId._id === exam._id);
 
                                     return (
                                         <div
-                                            key={index}
+                                            key={exam._id} // Use unique key!
                                             className="bg-white border border-gray-500 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
                                         >
                                             <h2 className="text-xl font-semibold text-gray-900">{exam.name}</h2>
@@ -120,11 +119,13 @@ const UpcomingExams = () => {
 
                                             <div className="mt-6 text-center">
                                                 <button
-                                                    className={`px-4 py-2 ${userSubmission ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-indigo-700 text-white font-semibold'} rounded-md transition`}
-                                                    onClick={() => userSubmission ? null : handleView(exam._id)}
-                                                    disabled={!!userSubmission}
+                                                    className={`px-4 py-2 ${userSubmission || examDate !== todayDate ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-indigo-700 text-white font-semibold'} rounded-md transition`}
+                                                    onClick={() => (userSubmission || examDate !== todayDate) ? null : handleView(exam._id)}
+                                                    disabled={!!userSubmission || examDate !== todayDate}
                                                 >
-                                                    {userSubmission ? "Exam Submitted" : (examDate === todayDate ? "Take Exam" : "Wait for the day")}
+                                                    {userSubmission
+                                                        ? "Exam Submitted"
+                                                        : (examDate === todayDate ? "Take Exam" : "Wait for the day")}
                                                 </button>
                                             </div>
                                         </div>

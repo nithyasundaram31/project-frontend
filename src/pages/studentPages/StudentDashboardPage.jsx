@@ -10,17 +10,17 @@ const StudentDashboardPage = () => {
     const dispatch = useDispatch();
     const hasFetchedExams = useRef(false);
 
+    // FIX: Await the async dispatch
     const fetchExams = useCallback(async () => {
         try {
             setIsLoading(true);
-            dispatch(getSubmitted())
+            await dispatch(getSubmitted()); // Await here!
         } catch (error) {
             console.error("Error fetching submitted exams:", error);
         } finally {
-            setIsLoading(false)
-        };
+            setIsLoading(false);
+        }
     }, [dispatch]);
-
 
     useEffect(() => {
         const loadExams = () => {
@@ -41,7 +41,7 @@ const StudentDashboardPage = () => {
             loadExams();
             hasFetchedExams.current = true;
         }
-    }, [dispatch, fetchExams]); // Removed loadExams from dependencies
+    }, [dispatch, fetchExams]);
 
     useEffect(() => {
         if (submittedData?.length) {
@@ -56,8 +56,14 @@ const StudentDashboardPage = () => {
             </div>
         );
     }
-    const sortedSubmissions = submittedData?.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+
+    // Defensive: handle empty/null array
+    const sortedSubmissions = Array.isArray(submittedData)
+        ? submittedData.slice().sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt))
+        : [];
     const recentSubmission = sortedSubmissions?.[0];
+    const totalQ = recentSubmission?.totalQuestions || 0;
+    const percent = totalQ ? ((recentSubmission.totalMarks / totalQ) * 100).toFixed(2) : 0;
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -96,7 +102,7 @@ const StudentDashboardPage = () => {
                                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                                         {recentSubmission ? (
                                             <>
-                                                {((recentSubmission.totalMarks / recentSubmission.totalQuestions) * 100).toFixed(2)}%
+                                                {percent}%
                                                 <span className="ml-2 text-gray-500">({recentSubmission.totalMarks} out of {recentSubmission.totalQuestions})</span>
                                             </>
                                         ) : (
@@ -110,9 +116,8 @@ const StudentDashboardPage = () => {
                                     <dd className="mt-1 text-sm sm:mt-0 sm:col-span-2">
                                         {recentSubmission ? (
                                             (() => {
-                                                const percentage = (recentSubmission.totalMarks / recentSubmission.totalQuestions) * 100;
-                                                const statusText = percentage >= 50 ? 'Passed' : 'Failed';
-                                                const statusBgClass = percentage >= 50 ? 'bg-green-500 text-black' : 'bg-red-500 text-white';
+                                                const statusText = percent >= 50 ? 'Passed' : 'Failed';
+                                                const statusBgClass = percent >= 50 ? 'bg-green-500 text-black' : 'bg-red-500 text-white';
 
                                                 return (
                                                     <span className={`inline-block px-2 py-1 rounded ${statusBgClass}`}>
