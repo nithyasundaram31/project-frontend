@@ -1,7 +1,5 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-// Import icons 
 import { FaUsers as Users, FaBookOpen as BookOpen, FaChartBar as BarChart, FaCalendar as Calendar } from 'react-icons/fa';
-// Import components
 import StatsCard from '../components/dashboard/StatsCard';
 import UpcomingExams from '../components/dashboard/UpcomingExams';
 import RecentActivity from '../components/dashboard/RecentActivity';
@@ -11,8 +9,9 @@ import { getAllStudents, getStudentsActivity } from '../redux/actions/studentAct
 import QuickActions from '../components/dashboard/QuickActions';
 
 const AdminDashboardPage = () => {
-  const { exams } = useSelector(state => state.exams);
-  const { students, activity } = useSelector(state => state.studentState);
+  const exams = useSelector(state => state.exams.exams) || [];
+  const students = useSelector(state => state.studentState.students) || [];
+  const activity = useSelector(state => state.studentState.activity) || [];
 
   const dispatch = useDispatch();
   const hasFetchedExams = useRef(false);
@@ -29,32 +28,32 @@ const AdminDashboardPage = () => {
 
   useEffect(() => {
     if (!hasFetchedExams.current) {
-      fetchExams(); // Fetch exams only on initial mount
-      hasFetchedExams.current = true; // Mark as fetched
+      fetchExams();
+      hasFetchedExams.current = true;
     }
-  }, [dispatch, fetchExams]); // Dependency array includes dispatch
+  }, [fetchExams]);
 
-
-  // Filter active exams (exams with a date today)
+  // Filter active exams (today)
   const today = new Date();
-  today.setHours(0, 0, 0, 0); // Set time to midnight for accurate comparison
+  today.setHours(0, 0, 0, 0);
 
-  // Filter upcoming exams (exams with a date in the future)
-  const upcomingExams = exams ? exams.filter(exam => new Date(exam.date) >= today) : [];
-
-  const activeExams = exams ? exams.filter(exam => {
+  const upcomingExams = exams.filter(exam => {
     const examDate = new Date(exam.date);
-    examDate.setHours(0, 0, 0, 0); // Set exam date to midnight
-    return examDate.getTime() === today.getTime(); // Compare only date parts
-  }) : [];
+    return examDate >= today;
+  });
 
-  // Calculate Completion Rate
-  const completedExams = exams ? exams.filter(exam => new Date(exam.date) < new Date()).length : 0;
-  const totalExams = exams ? exams.length : 0;
+  const activeExams = exams.filter(exam => {
+    const examDate = new Date(exam.date);
+    examDate.setHours(0, 0, 0, 0);
+    return examDate.getTime() === today.getTime();
+  });
+
+  const completedExams = exams.filter(exam => new Date(exam.date) < today).length;
+  const totalExams = exams.length;
   const completionRate = totalExams > 0 ? ((completedExams / totalExams) * 100).toFixed(0) + '%' : '0%';
 
   const stats = [
-    { title: 'Total Students', value: students ? students.length : 0, icon: Users, bgColor: "bg-blue-500/[0.6]" },
+    { title: 'Total Students', value: students.length, icon: Users, bgColor: "bg-blue-500/[0.6]" },
     { title: 'Active Exams', value: activeExams.length, icon: BookOpen, bgColor: "bg-red-500/[0.6]" },
     { title: 'Completion Rate', value: completionRate, icon: BarChart, bgColor: "bg-lime-500/[0.6]" },
     { title: 'Upcoming Exams', value: upcomingExams.length, icon: Calendar, bgColor: "bg-cyan-500/[0.6]" }
@@ -73,13 +72,9 @@ const AdminDashboardPage = () => {
         <QuickActions />
       </div>
 
-      {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        {/* Upcoming Exams */}
         <UpcomingExams exams={upcomingExams} />
-
-        {/* Recent Activity */}
-        <RecentActivity activities={activity?.activities} />
+        <RecentActivity activities={Array.isArray(activity.activities) ? activity.activities : activity} />
       </div>
     </div>
   );
