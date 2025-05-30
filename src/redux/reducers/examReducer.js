@@ -1,22 +1,25 @@
-import { CREATE_EXAM, GET_EXAMS, CREATE_EXAM_FAIL, GET_EXAM_FAIL, DELETE_EXAM, DELETE_EXAM_FAIL, EDIT_EXAM_FAILURE, EDIT_EXAM_SUCCESS, GET_EXAM_BY_ID } from '../../constants/examConstants';
+import {
+  CREATE_EXAM, GET_EXAMS, CREATE_EXAM_FAIL, GET_EXAM_FAIL,
+  DELETE_EXAM, DELETE_EXAM_FAIL, EDIT_EXAM_FAILURE, EDIT_EXAM_SUCCESS, GET_EXAM_BY_ID
+} from '../../constants/examConstants';
 
 const initialState = {
     exams: [],
-    user: [],
+    user: null,
     submittedData: [],
-    examDetails: [],
+    examDetails: null,
     isLoading: false,
     error: null,
 };
 
- const examReducer = (state = initialState, action) => {
+const examReducer = (state = initialState, action) => {
     switch (action.type) {
         case GET_EXAMS:
             return {
                 ...state,
                 exams: action.payload.exams,
                 submittedData: action.payload.submittedData,
-                user: action.payload.user?.[0]
+                user: action.payload.user // <-- fixed
             };
         case GET_EXAM_BY_ID:
             return { ...state, examDetails: action.payload }
@@ -32,11 +35,10 @@ const initialState = {
         case DELETE_EXAM:
             return {
                 ...state,
-                loading: false,
-                exams: state.exams.filter((exam) => exam._id !== action.payload), // Remove deleted exam
+                exams: state.exams.filter((exam) => exam._id !== action.payload),
             };
         default:
             return state;
     }
 };
-export default examReducer; 
+export default examReducer;
