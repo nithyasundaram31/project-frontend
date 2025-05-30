@@ -4,7 +4,6 @@ import { createExam, deleteExam, getExams, updateExam } from '../redux/actions/e
 import { ToastContainer } from 'react-toastify';
 import { formatDateToInput } from '../utils/dateUtils';
 import ExamTable from '../components/ExamTable';
-import ErrorHandler from '../components/ErrorHandler';
 import { useNavigate } from 'react-router-dom';
 
 const ExamScheduling = () => {
@@ -12,31 +11,30 @@ const ExamScheduling = () => {
     const navigate = useNavigate();
     const hasFetchedExams = useRef(false);
 
-    const { exams } = useSelector(state => state.exams);
+    const { exams = [] } = useSelector(state => state.exams);
     const [examData, setExamData] = useState({ name: '', date: '', duration: '', totalMarks: '', totalQuestions: "", description: "" });
     const [isLoading, setIsLoading] = useState(false);
     const [examId, setExamID] = useState("");
-    // State for search query
     const [searchQuery, setSearchQuery] = useState('');
 
+    // Await getExams for reliable loading state
     const fetchExams = useCallback(async () => {
         try {
             setIsLoading(true);
-            dispatch(getExams());
-            setSearchQuery("");
-            setIsLoading(false);
+            await dispatch(getExams());
         } catch (error) {
             console.error('Failed to fetch exams:', error);
+        } finally {
+            setIsLoading(false);
         }
     }, [dispatch]);
 
     useEffect(() => {
         if (!hasFetchedExams.current) {
-            fetchExams();  // Fetch exams only on initial mount
-            hasFetchedExams.current = true; // Mark as fetched
+            fetchExams();
+            hasFetchedExams.current = true;
         }
-    }, [dispatch, fetchExams]); // Dependency array includes dispatch
-
+    }, [fetchExams]);
 
     const handleChange = (e) => {
         setExamData({ ...examData, [e.target.name]: e.target.value });
@@ -49,35 +47,32 @@ const ExamScheduling = () => {
 
     // filtering editing exam
     const updateFun = (id) => {
-        //set examid
-        let examId = null;
-        if (id) {
-            examId = id ? id : "";
-            setExamID(examId)
-        }
-        //pre-filling exam
-        let exam = null; // Initialize exam as null
-        if (exams) {
-            exam = exams.find((e) => e._id === id);
-            setExamData(exam);
+        setExamID(id || "");
+        if (exams && id) {
+            const exam = exams.find((e) => e._id === id);
+            if (exam) setExamData(exam);
         }
     }
 
     //delete the exam
     const handleDelete = async (id) => {
         setIsLoading(true);
-        const response = await dispatch(deleteExam(id));
-        if (response) {
-            dispatch(getExams());
+        try {
+            const response = await dispatch(deleteExam(id));
+            if (response) {
+                await dispatch(getExams());
+            }
+        } catch (error) {
+            console.error(error);
         }
         setIsLoading(false);
-        setExamData({ name: '', date: '', duration: '', totalMarks: '', totalQuestions: "", description: "" }); // Reset form
+        setExamData({ name: '', date: '', duration: '', totalMarks: '', totalQuestions: "", description: "" });
     }
 
     const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
         try {
-            setIsLoading(true);
-            e.preventDefault();
             let response;
             if (examId) {
                 response = await dispatch(updateExam(examId, examData));
@@ -85,28 +80,22 @@ const ExamScheduling = () => {
                 response = await dispatch(createExam(examData));
             }
 
-            //get exam list
             if (response) {
-                dispatch(getExams());
+                await dispatch(getExams());
             }
-            setIsLoading(false);
             setExamID("");
-            setSearchQuery("");
-            setExamData({ name: '', date: '', duration: '', totalMarks: '', totalQuestions: "", description: "" }); // Reset form
+            setExamData({ name: '', date: '', duration: '', totalMarks: '', totalQuestions: "", description: "" });
         } catch (error) {
-            console.log(error);
-            <ErrorHandler error={error} />
+            console.error(error);
         }
-
+        setIsLoading(false);
     };
 
     // Filter exams based on the search query
     const filteredExams = exams.filter((exam) => {
-        // Check if question and question.question are defined
         return exam && exam.name && exam.name.toLowerCase().includes(searchQuery.toLowerCase());
     });
 
-    // Handle search input change
     const handleSearchChange = (e) => {
         setSearchQuery(e.target.value);
     };
@@ -116,13 +105,10 @@ const ExamScheduling = () => {
             <ToastContainer />
             <h2 className="flex justify-center items-center text-xl text-blue-500 font-bold mb-4">Exam Management</h2>
             <form onSubmit={handleSubmit} className="mb-4 flex flex-col justify-center items-center space-y-4">
-
-                {/* Row for Exam Name and Date */}
+                {/* Exam Name and Date */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full md:w-1/2 lg:w-1/2">
                     <div>
-                        <label htmlFor="name" className="block text-gray-700">
-                            Exam:
-                        </label>
+                        <label htmlFor="name" className="block text-gray-700">Exam:</label>
                         <input
                             id="name"
                             type="text"
@@ -135,9 +121,7 @@ const ExamScheduling = () => {
                         />
                     </div>
                     <div>
-                        <label htmlFor="date" className="block text-gray-700">
-                            Date:
-                        </label>
+                        <label htmlFor="date" className="block text-gray-700">Date:</label>
                         <input
                             id="date"
                             type="date"
@@ -149,13 +133,10 @@ const ExamScheduling = () => {
                         />
                     </div>
                 </div>
-
-                {/* Row for Total Marks and Total Questions */}
+                {/* Marks & Questions */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full md:w-1/2 lg:w-1/2">
                     <div>
-                        <label htmlFor="totalMarks" className="block text-gray-700">
-                            Total Marks:
-                        </label>
+                        <label htmlFor="totalMarks" className="block text-gray-700">Total Marks:</label>
                         <input
                             type="number"
                             name="totalMarks"
@@ -168,9 +149,7 @@ const ExamScheduling = () => {
                         />
                     </div>
                     <div>
-                        <label htmlFor="totalQuestions" className="block text-gray-700">
-                            Total Questions:
-                        </label>
+                        <label htmlFor="totalQuestions" className="block text-gray-700">Total Questions:</label>
                         <input
                             type="number"
                             name="totalQuestions"
@@ -183,12 +162,9 @@ const ExamScheduling = () => {
                         />
                     </div>
                 </div>
-
-                {/* Row for Duration */}
+                {/* Duration */}
                 <div className="w-full md:w-1/2 lg:w-1/2">
-                    <label htmlFor="duration" className="block text-gray-700">
-                        Duration:
-                    </label>
+                    <label htmlFor="duration" className="block text-gray-700">Duration:</label>
                     <input
                         id="duration"
                         type="number"
@@ -200,12 +176,9 @@ const ExamScheduling = () => {
                         required
                     />
                 </div>
-
-                {/* Description Textarea */}
+                {/* Description */}
                 <div className="w-full md:w-1/2 lg:w-1/2">
-                    <label htmlFor="examDescription" className="block text-gray-700">
-                        Description:
-                    </label>
+                    <label htmlFor="examDescription" className="block text-gray-700">Description:</label>
                     <textarea
                         name="description"
                         id="examDescription"
@@ -216,38 +189,30 @@ const ExamScheduling = () => {
                         className="border-2 border-blue-500 rounded w-full focus:outline-none focus:ring focus:ring-blue-300 px-3 py-2 h-16 resize-none"
                     />
                 </div>
-
-                {/* Submit Button */}
                 <button type="submit" className="rounded bg-blue-500 text-white p-2 w-full md:w-1/2 lg:w-1/2">
                     {examId ? "Update Exam" : "Schedule Exam"}
                 </button>
             </form>
-
             <hr />
             <div className="flex items-center justify-between w-full mb-2 p-3">
-                {/* Exams heading */}
                 <h2 className="text-xl font-bold ml-4">Scheduled Exams:</h2>
-
-                {/* Search Section */}
                 <div className="flex flex-col justify-center w-1/3 mr-4">
                     <input
                         type="text"
                         placeholder="Search exams by name..."
                         value={searchQuery}
-                        onChange={handleSearchChange} // Use the appropriate search handler function
+                        onChange={handleSearchChange}
                         className="border p-2 rounded border-blue-500"
                     />
                 </div>
             </div>
-
             <ExamTable
                 exams={filteredExams}
                 isLoading={isLoading}
-                onView={(e) => handleView(e)}
-                onDelete={(id) => handleDelete(id)}
-                onEdit={(id) => updateFun(id)}
+                onView={handleView}
+                onDelete={handleDelete}
+                onEdit={updateFun}
             />
-
         </div>
     );
 };

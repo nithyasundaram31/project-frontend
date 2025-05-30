@@ -3,12 +3,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ToastContainer, toast } from 'react-toastify';
 import { getProfile, updateProfile } from '../redux/actions/authActions';
 import { formatDateToInput } from "../utils/dateUtils";
-import ErrorHandler from '../components/ErrorHandler';
 import { FaSpinner } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const ProfileUpdate = () => {
     const { user, userData } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const hasFetchedProfile = useRef(false);
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -21,31 +22,30 @@ const ProfileUpdate = () => {
         gender: "",
     });
 
+    // Fetch User Profile on mount (only once)
     useEffect(() => {
-        const getUserProfile = async (data) => {
-            let id = data || user.id;
-            setIsLoading(true); // Start loading
+        const getUserProfile = async (idArg) => {
+            const id = idArg || user?.id;
+            if (!id) return; // Defensive: skip if id missing
+            setIsLoading(true);
             try {
                 await dispatch(getProfile(id));
             } catch (error) {
                 console.error(error);
                 toast.error('Failed to get profile');
-                <ErrorHandler error={error} />
             } finally {
-                setIsLoading(false); // Stop loading
+                setIsLoading(false);
             }
         };
-    
-        if (!hasFetchedProfile.current) {
+        if (!hasFetchedProfile.current && user?.id) {
             getUserProfile(user.id);
-            hasFetchedProfile.current = true; // Mark as fetched
+            hasFetchedProfile.current = true;
         }
-    }, [dispatch, user.id]); // Removed getUserProfile from dependencies
-    
+    }, [dispatch, user?.id]);
 
+    // Update formData when userData changes
     useEffect(() => {
-        // Update formData when userData changes
-        if (userData?.profile) {
+        if (userData?.profile && user) {
             setFormData({
                 id: user.id,
                 name: user.name || "",
@@ -61,16 +61,20 @@ const ProfileUpdate = () => {
     // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
         try {
             const response = await dispatch(updateProfile(formData));
             if (response) {
-                dispatch(getProfile(JSON.stringify(response._id)));
+                // Refetch the profile after update
+                await dispatch(getProfile(formData.id));
+                toast.success("Profile updated successfully");
             }
         } catch (error) {
             console.error('Error updating profile:', error);
             toast.error('Failed to update profile');
-            // <ErrorHandler error={error} />
-            navigate('/error'); // Navigate to a global error page
+            navigate('/error');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -115,6 +119,7 @@ const ProfileUpdate = () => {
                             className="bg-gray-200 border border-blue-500 w-full p-2 mb-2 mt-1 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Enter your email"
                             required
+                            autoComplete="username"
                         />
                     </div>
 
