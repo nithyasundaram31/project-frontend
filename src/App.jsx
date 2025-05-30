@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import 'react-toastify/dist/ReactToastify.css';
 
+// Components & Pages
 import Register from './components/Register';
 import Login from './components/Login';
 import StudentDashboard from './pages/studentPages/StudentDashboard';
@@ -16,7 +17,7 @@ import ErrorPage from './components/ErrorPage';
 import TermsOfService from './components/footer/TermsOfService';
 import PrivacyPolicy from './components/footer/PrivacyPolicy';
 import About from './components/footer/About';
-import ExamView from './components/ExamView';
+import ExamView from './components/ExamView'; // Confirmed: your ExamView is in 'components'
 import StudentDashboardPage from './pages/studentPages/StudentDashboardPage';
 import UpcomingExams from './pages/studentPages/UpcomingExams';
 import ExamDetails from './pages/studentExam/ExamDetails';
