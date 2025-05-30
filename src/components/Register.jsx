@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { register } from '../redux/actions/authActions';
 import { ToastContainer, toast } from 'react-toastify';
-import ErrorHandler from '../components/ErrorHandler';
 import { useDispatch } from 'react-redux';
 
 const Register = () => {
@@ -17,14 +16,16 @@ const Register = () => {
         try {
             const response = await dispatch(register(formData));
             if (response) {
+                toast.success("Registration successful! Please login.");
                 setTimeout(() => {
-                    navigate('/login');  // navigate to login page after successfully register
-                }, 2000)
+                    navigate('/login');
+                }, 1500);
+            } else {
+                toast.error("Registration failed. Please try again.");
             }
         } catch (error) {
-            console.error(error);
-            toast.error(error);
-            navigate('/error'); // Navigate to a global error page
+            // This catches network/unexpected errors
+            toast.error("Registration failed. Please try again.");
         }
     };
 
@@ -33,7 +34,7 @@ const Register = () => {
             <div className='p-4'>
                 <h2 className="text-4xl font-bold text-blue-500">Online Assessment Platform</h2>
             </div>
-            <form action="" onSubmit={handleRegister} className='w-96 p-6 bg-white rounded'>
+            <form onSubmit={handleRegister} className='w-96 p-6 bg-white rounded'>
                 <h2 className='mb-8 text-4xl font-bold text-blue-500'>Register</h2>
                 <input type="text"
                     placeholder='Name'
@@ -45,33 +46,32 @@ const Register = () => {
                     placeholder='Email'
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className='border border border-blue-500 rounded w-full p-2 mb-4' />
+                    className='border border-blue-500 rounded w-full p-2 mb-4' />
 
                 <input type="password"
                     placeholder='Password'
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className='border border border-blue-500 rounded w-full p-2 mb-4' />
+                    className='border border-blue-500 rounded w-full p-2 mb-4' />
 
-                <select name="" id=""
+                <select
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                    className='border border border-blue-500 rounded w-full p-2 mb-4'
+                    className='border border-blue-500 rounded w-full p-2 mb-4'
                 >
                     <option value="student">Student</option>
                     <option value="admin">Admin</option>
                 </select>
                 <button className='bg-blue-500 border-none rounded text-white p-2 w-full'>Register</button>
                 <div className='mt-4'>
-                    <p >Already have an account?
-                        <Link to="/login" className='ml-4 underline text-blue-500' >login</Link>
+                    <p>Already have an account?
+                        <Link to="/login" className='ml-4 underline text-blue-500'>Login</Link>
                     </p>
                 </div>
             </form>
-            {/* ToastContainer */}
             <ToastContainer />
         </div>
-    )
+    );
 }
 
 export default Register;
