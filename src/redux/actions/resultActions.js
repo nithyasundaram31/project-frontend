@@ -1,96 +1,113 @@
-// actions/examActions.js
-import axios from 'axios';
+import instance from '../../services/instance'; // Consistent axios instance usage
+import { toast } from 'react-toastify';
 import ErrorHandler from '../../components/ErrorHandler';
 
-// Base configuration for Axios
-const API = axios.create({
-     baseURL: `${import.meta.env.VITE_BACKEND_URL}/api/result`
-});
-
-// Add a request interceptor
-API.interceptors.request.use(
-    (req) => {
-        const token = localStorage.getItem('token'); // Adjust based on where you store your token
-
-        if (token) {
-            // Add the headers
-            req.headers['Content-Type'] = 'application/json'; // Set content type
-            req.headers['Authorization'] = `Bearer ${token}`; // Pass JWT token in header
-        }
-        return req; // Return the modified request
-    },
-    (error) => {
-        // Handle any error that occurs before the request is sent
-        return Promise.reject(error);
-    }
-);
-
-//get single student result
+// Get student result - Fixed version
 export const getStudentResult = (id) => async (dispatch) => {
     try {
-        const { data } = await API.get(`/${id}`);        
+        // Validation check
+        if (!id) {
+            throw new Error('Student ID is required');
+        }
+
+        // Use consistent instance instead of creating new API
+        const { data } = await instance.get(`/api/result/${id}`);
+        
+        // Success toast message
+        toast.success('Result loaded successfully');
+        
         dispatch({
             type: 'GET_RESULT_SUCCESS',
             payload: data,
         });
 
+        return data;
     } catch (error) {
+        console.error('Get student result error:', error);
+        
+        // Better error message handling
+        let errorMessage = 'Failed to load result. Please try again.';
+        
+        if (error?.response?.status === 404) {
+            errorMessage = 'Result not found for this student.';
+        } else if (error?.response?.status === 403) {
+            errorMessage = 'Access denied. You don\'t have permission to view this result.';
+        } else if (error?.response?.status >= 500) {
+            errorMessage = 'Server error. Please try again later.';
+        } else if (error?.response?.data?.message) {
+            errorMessage = error.response.data.message;
+        }
+
+        toast.error(errorMessage);
+        
         dispatch({
             type: 'GET_RESULT_FAIL',
-            payload: error.response && error.response.data.message
-                ? error.response.data.message
-                : error.message,
+            payload: errorMessage,
         });
-        // <ErrorHandler error={error} />
-// Fixed: Call ErrorHandler as a function, not JSX
+
+        // Call ErrorHandler as function, not JSX
         ErrorHandler({ error });
+        
+        throw error;
     }
 };
 
-// actions/resultActions.js
-// import axios from 'axios';
-// import ErrorHandler from '../../components/ErrorHandler';
+// Get all results (additional function)
+export const getAllResults = () => async (dispatch) => {
+    try {
+        const { data } = await instance.get('/api/result/');
+        
+        dispatch({
+            type: 'GET_ALL_RESULTS_SUCCESS',
+            payload: data,
+        });
 
-// // Base configuration for Axios
-// const API = axios.create({
-//     baseURL: import.meta.env.VITE_BACKEND_URL || 'https://project-backend-om0o.onrender.com/api/result'
-// });
+        return data;
+    } catch (error) {
+        console.error('Get all results error:', error);
+        
+        const errorMessage = error?.response?.data?.message || 'Failed to load results';
+        toast.error(errorMessage);
+        
+        dispatch({
+            type: 'GET_ALL_RESULTS_FAIL',
+            payload: errorMessage,
+        });
 
-// // Add a request interceptor
-// API.interceptors.request.use(
-//     (req) => {
-//         const token = localStorage.getItem('token');
-        
-//         if (token) {
-//             req.headers['Content-Type'] = 'application/json';
-//             req.headers['Authorization'] = `Bearer ${token}`;
-//         }
-//         return req;
-//     },
-//     (error) => {
-//         return Promise.reject(error);
-//     }
-// );
+        ErrorHandler({ error });
+        throw error;
+    }
+};
 
-// // Get single student result
-// export const getStudentResult = (id) => async (dispatch) => {
-//     try {
-//         const { data } = await API.get(`/${id}`);
+// Create/Submit result
+export const submitResult = (resultData) => async (dispatch) => {
+    try {
+        if (!resultData) {
+            throw new Error('Result data is required');
+        }
+
+        const { data } = await instance.post('/api/result/', resultData);
         
-//         dispatch({
-//             type: 'GET_RESULT_SUCCESS',
-//             payload: data,
-//         });
+        toast.success(data?.message || 'Result submitted successfully');
         
-//     } catch (error) {
-//         dispatch({
-//             type: 'GET_RESULT_FAIL',
-//             payload: error.response && error.response.data.message
-//                 ? error.response.data.message
-//                 : error.message,
-//         });
+        dispatch({
+            type: 'SUBMIT_RESULT_SUCCESS',
+            payload: data,
+        });
+
+        return data;
+    } catch (error) {
+        console.error('Submit result error:', error);
         
-//         // Fixed: Call ErrorHandler as a function, not JSX
-//         ErrorHandler({ error });
-//     }
-// };
+        const errorMessage = error?.response?.data?.message || 'Failed to submit result';
+        toast.error(errorMessage);
+        
+        dispatch({
+            type: 'SUBMIT_RESULT_FAIL',
+            payload: errorMessage,
+        });
+
+        ErrorHandler({ error });
+        throw error;
+    }
+};

@@ -25,6 +25,8 @@ export const login = (userData) => async (dispatch) => {
     localStorage.setItem('userType', response.data.user.role);
     localStorage.setItem('userId', response.data.user.id);
     dispatch({ type: 'LOGIN_SUCCESS', payload: response.data });
+    console.log(localStorage.getItem('token'));
+    console.log(localStorage.getItem('user'));
     return response.data;
   } catch (error) {
     toast.error(error.response?.data?.message || error.response?.data);
