@@ -23,9 +23,12 @@ import ExamDetails from './pages/studentExam/ExamDetails';
 import ExamInterface from './pages/studentExam/ExamInterface';
 import Results from './pages/studentExam/Results';
 import StudentResult from './components/StudentResults';
+import instance from './services/instance'; // Adjust path if needed
 
 function App() {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
+   console.log("BaseURL:", import.meta.env.VITE_BACKEND_URL);
+  console.log("Axios BaseURL:", instance.defaults.baseURL);
 
   return (
     <Routes>
