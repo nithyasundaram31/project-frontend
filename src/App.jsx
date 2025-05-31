@@ -27,8 +27,13 @@ import instance from './services/instance'; // Adjust path if needed
 
 function App() {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
-   console.log("BaseURL:", import.meta.env.VITE_BACKEND_URL);
-  console.log("Axios BaseURL:", instance.defaults.baseURL);
+  console.log("Auth State:", { isAuthenticated, user });
+  console.log("Full state:", useSelector(state => state));
+  //  console.log("BaseURL:", import.meta.env.VITE_BACKEND_URL);
+  // console.log("Axios BaseURL:", instance.defaults.baseURL);
+  console.log("Auth State:", { isAuthenticated, user });
+  console.log("LocalStorage Token:", localStorage.getItem('token'));
+  console.log("LocalStorage User:", localStorage.getItem('user'));
 
   return (
     <Routes>
