@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { getSubmitted } from "../../redux/actions/submitExam";
 
 const StudentDashboardPage = () => {
-    const { submitedData } = useSelector((state) => state.examSubmit);
+    const { submittedData } = useSelector((state) => state.examSubmit); // Fixed spelling
     const [isLoading, setIsLoading] = useState(true);
     const dispatch = useDispatch();
     const hasFetchedExams = useRef(false);
@@ -13,18 +13,17 @@ const StudentDashboardPage = () => {
     const fetchExams = useCallback(async () => {
         try {
             setIsLoading(true);
-            dispatch(getSubmitted())
+            dispatch(getSubmitted());
         } catch (error) {
             console.error("Error fetching submitted exams:", error);
         } finally {
-            setIsLoading(false)
-        };
+            setIsLoading(false);
+        }
     }, [dispatch]);
-
 
     useEffect(() => {
         const loadExams = () => {
-            const cachedData = localStorage.getItem('submitedData');
+            const cachedData = localStorage.getItem('submittedData');
             if (cachedData) {
                 const parsedData = JSON.parse(cachedData);
                 dispatch({
@@ -41,13 +40,13 @@ const StudentDashboardPage = () => {
             loadExams();
             hasFetchedExams.current = true;
         }
-    }, [dispatch, fetchExams]); // Removed loadExams from dependencies
+    }, [dispatch, fetchExams]);
 
     useEffect(() => {
-        if (submitedData?.length) {
-            localStorage.setItem('submitedData', JSON.stringify(submitedData));
+        if (submittedData?.length) {
+            localStorage.setItem('submittedData', JSON.stringify(submittedData));
         }
-    }, [submitedData]);
+    }, [submittedData]);
 
     if (isLoading) {
         return (
@@ -56,6 +55,7 @@ const StudentDashboardPage = () => {
             </div>
         );
     }
+
     const sortedSubmissions = submittedData?.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
     const recentSubmission = sortedSubmissions?.[0];
 
