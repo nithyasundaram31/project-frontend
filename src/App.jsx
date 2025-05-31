@@ -6,7 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Register from './components/Register';
 import Login from './components/Login';
 import StudentDashboard from './pages/studentPages/StudentDashboard';
-import AdminDashboard from './pages/AdminDashboard';
+import AdminDashboard from './pages/AdminDashboard'
 import ProfileUpdate from './pages/ProfilePage';
 import ExamScheduling from './pages/ExamScheduling';
 import StudentsList from './pages/StudentsList';
@@ -23,31 +23,22 @@ import ExamDetails from './pages/studentExam/ExamDetails';
 import ExamInterface from './pages/studentExam/ExamInterface';
 import Results from './pages/studentExam/Results';
 import StudentResult from './components/StudentResults';
-import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
 
   return (
     <Routes>
-      {/* Public Routes */}
       <Route path="/" element={isAuthenticated ? <Navigate to={`/${user?.role}/dashboard`} /> : <Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
+
       <Route path="/about" element={<About />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />
 
-      {/* Student Routes */}
-      <Route
-        path="/student/dashboard"
-        element={
-          <ProtectedRoute role="student">
-            <StudentDashboard />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<StudentDashboardPage />} />
+      <Route path="/student/dashboard" element={isAuthenticated && user?.role === 'student' ? <StudentDashboard /> : <Navigate to="/login" />} >
+        <Route path="" element={<StudentDashboardPage />} />
         <Route path="profile" element={<ProfileUpdate />} />
         <Route path="exams" element={<UpcomingExams />} />
         <Route path="exam-details/:id" element={<ExamDetails />} />
@@ -55,16 +46,8 @@ function App() {
         <Route path="results" element={<Results />} />
       </Route>
 
-      {/* Admin Routes */}
-      <Route
-        path="/admin/dashboard"
-        element={
-          <ProtectedRoute role="admin">
-            <AdminDashboard />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<AdminDashboardPage />} />
+      <Route path="/admin/dashboard" element={isAuthenticated && user?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/login" />} >
+        <Route path="" element={<AdminDashboardPage />} />
         <Route path="profile" element={<ProfileUpdate />} />
         <Route path="exams" element={<ExamScheduling />} />
         <Route path="exams/:id" element={<ExamView />} />
@@ -73,8 +56,7 @@ function App() {
         <Route path="student-result/:id" element={<StudentResult />} />
       </Route>
 
-      {/* Catch-all Error Page */}
-      <Route path="*" element={<ErrorPage />} />
+      <Route path="/error" element={<ErrorPage />} />
     </Routes>
   );
 }

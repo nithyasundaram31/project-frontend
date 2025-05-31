@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getSubmitted } from '../../redux/actions/submitExam';
 
 const Results = () => {
-    const { submittedData } = useSelector((state) => state.examSubmit); // spelling fixed
+    const { submittedData } = useSelector((state) => state.examSubmit);
     const [isLoading, setIsLoading] = useState(true);
     const dispatch = useDispatch();
     const hasFetchedExams = useRef(false);
@@ -31,10 +31,11 @@ const Results = () => {
         <div>
             <ExamResultsPage
                 isLoading={isLoading}
-                recentSubmissions={submittedData || []}
+                recentSubmissions={submittedData}
             />
+
         </div>
-    );
+    )
 }
 
-export default Results;
+export default Results

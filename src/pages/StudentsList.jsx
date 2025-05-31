@@ -3,68 +3,42 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getAllStudents, deleteStudent, updateExamPermission, updateRole } from '../redux/actions/studentActions';
 import StudentTable from '../components/StudentsTable';
 import { useNavigate } from 'react-router-dom';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 
 const StudentsList = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { students = [] } = useSelector(state => state.studentState);
+    const { students } = useSelector(state => state.studentState);
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        const fetchStudents = async () => {
-            setIsLoading(true);
-            try {
-                await dispatch(getAllStudents());
-            } catch (error) {
-                toast.error('Failed to fetch students');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchStudents();
+        setIsLoading(true);
+        dispatch(getAllStudents());
+        setIsLoading(false);
     }, [dispatch]);
 
-    const handleDelete = async (id) => {
+    const handleDelete = (id) => {
         setIsLoading(true);
-        try {
-            await dispatch(deleteStudent(id));
-            await dispatch(getAllStudents());
-        } catch (error) {
-            toast.error('Failed to delete student');
-        } finally {
-            setIsLoading(false);
-        }
+        dispatch(deleteStudent(id));
+        dispatch(getAllStudents());
+        setIsLoading(false);
     };
 
-    const togglePermission = async (id, currentPermission) => {
-        setIsLoading(true);
-        try {
-            await dispatch(updateExamPermission(id, !currentPermission));
-            await dispatch(getAllStudents());
-        } catch (error) {
-            toast.error('Failed to update permission');
-        } finally {
-            setIsLoading(false);
-        }
+    const togglePermission = (id, currentPermission) => {
+        dispatch(updateExamPermission(id, !currentPermission));
     };
 
+    //handle view exam
     const handleView = (id) => {
         navigate(`/admin/dashboard/student-result/${id}`);
-    };
+    }
 
+    //handle role
     const handleRole = async (e, id) => {
-        setIsLoading(true);
         const newRole = { role: e.target.value };
-        try {
-            await dispatch(updateRole(newRole, id));
-            await dispatch(getAllStudents());
-        } catch (error) {
-            toast.error('Failed to update role');
-        } finally {
-            setIsLoading(false);
-        }
-    };
+        await dispatch(updateRole(newRole, id));
+        dispatch(getAllStudents());
+    }
 
     return (
         <div className="p-4">
@@ -73,9 +47,9 @@ const StudentsList = () => {
                 students={students}
                 isLoading={isLoading}
                 togglePermission={togglePermission}
-                onView={handleView}
-                onDelete={handleDelete}
-                onRoleChange={handleRole}
+                onView={(id) => handleView(id)}
+                onDelete={(id) => handleDelete(id)}
+                onRoleChange={(e, id) => handleRole(e, id)}
             />
             <ToastContainer />
         </div>

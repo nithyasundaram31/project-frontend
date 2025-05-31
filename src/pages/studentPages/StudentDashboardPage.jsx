@@ -5,26 +5,26 @@ import { Link } from "react-router-dom";
 import { getSubmitted } from "../../redux/actions/submitExam";
 
 const StudentDashboardPage = () => {
-    const { submittedData } = useSelector((state) => state.examSubmit);
+    const { submitedData } = useSelector((state) => state.examSubmit);
     const [isLoading, setIsLoading] = useState(true);
     const dispatch = useDispatch();
     const hasFetchedExams = useRef(false);
 
-    // FIX: Await the async dispatch
     const fetchExams = useCallback(async () => {
         try {
             setIsLoading(true);
-            await dispatch(getSubmitted()); // Await here!
+            dispatch(getSubmitted())
         } catch (error) {
             console.error("Error fetching submitted exams:", error);
         } finally {
-            setIsLoading(false);
-        }
+            setIsLoading(false)
+        };
     }, [dispatch]);
+
 
     useEffect(() => {
         const loadExams = () => {
-            const cachedData = localStorage.getItem('submittedData');
+            const cachedData = localStorage.getItem('submitedData');
             if (cachedData) {
                 const parsedData = JSON.parse(cachedData);
                 dispatch({
@@ -41,13 +41,13 @@ const StudentDashboardPage = () => {
             loadExams();
             hasFetchedExams.current = true;
         }
-    }, [dispatch, fetchExams]);
+    }, [dispatch, fetchExams]); // Removed loadExams from dependencies
 
     useEffect(() => {
-        if (submittedData?.length) {
-            localStorage.setItem('submittedData', JSON.stringify(submittedData));
+        if (submitedData?.length) {
+            localStorage.setItem('submitedData', JSON.stringify(submitedData));
         }
-    }, [submittedData]);
+    }, [submitedData]);
 
     if (isLoading) {
         return (
@@ -56,17 +56,11 @@ const StudentDashboardPage = () => {
             </div>
         );
     }
-
-    // Defensive: handle empty/null array
-    const sortedSubmissions = Array.isArray(submittedData)
-        ? submittedData.slice().sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt))
-        : [];
+    const sortedSubmissions = submittedData?.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
     const recentSubmission = sortedSubmissions?.[0];
-    const totalQ = recentSubmission?.totalQuestions || 0;
-    const percent = totalQ ? ((recentSubmission.totalMarks / totalQ) * 100).toFixed(2) : 0;
 
     return (
-        <div className="bg-gray-100 w-full">
+        <div className="min-h-screen bg-gray-100">
             <header className="bg-white shadow">
                 <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                     <h1 className="text-2xl font-bold text-blue-500">Student Dashboard</h1>
@@ -102,7 +96,7 @@ const StudentDashboardPage = () => {
                                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                                         {recentSubmission ? (
                                             <>
-                                                {percent}%
+                                                {((recentSubmission.totalMarks / recentSubmission.totalQuestions) * 100).toFixed(2)}%
                                                 <span className="ml-2 text-gray-500">({recentSubmission.totalMarks} out of {recentSubmission.totalQuestions})</span>
                                             </>
                                         ) : (
@@ -116,8 +110,9 @@ const StudentDashboardPage = () => {
                                     <dd className="mt-1 text-sm sm:mt-0 sm:col-span-2">
                                         {recentSubmission ? (
                                             (() => {
-                                                const statusText = percent >= 50 ? 'Passed' : 'Failed';
-                                                const statusBgClass = percent >= 50 ? 'bg-green-500 text-black' : 'bg-red-500 text-white';
+                                                const percentage = (recentSubmission.totalMarks / recentSubmission.totalQuestions) * 100;
+                                                const statusText = percentage >= 50 ? 'Passed' : 'Failed';
+                                                const statusBgClass = percentage >= 50 ? 'bg-green-500 text-black' : 'bg-red-500 text-white';
 
                                                 return (
                                                     <span className={`inline-block px-2 py-1 rounded ${statusBgClass}`}>

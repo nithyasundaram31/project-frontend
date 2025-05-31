@@ -9,15 +9,27 @@ const AdminDashboard = () => {
 
   return (
     <div className="flex flex-col h-screen">
-      <Header isOpen={isOpen} toggle={() => setIsOpen(!isOpen)} />
+      {/* Header */}
+      <Header
+        isOpen={isOpen}
+        toggle={() => setIsOpen(!isOpen)}
+      />
+
       <div className="flex flex-1">
+        {/* Middle Sidebar */}
         <Sidebar isOpen={isOpen} />
-        <main className="flex-1 overflow-y-auto p-4">
+
+        {/* Main Content */}
+        <main className="flex-1 overflow-auto p-4 w-3/4 float-left">
           <Outlet />
         </main>
       </div>
+
+
+      {/* Footer */}
       <Footer />
     </div>
+
   );
 };
 
