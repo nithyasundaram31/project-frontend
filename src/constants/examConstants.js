@@ -1,76 +1,76 @@
-// Create exam
-export const CREATE_EXAM_REQUEST = "CREATE_EXAM_REQUEST";
-export const CREATE_EXAM_SUCCESS = "CREATE_EXAM_SUCCESS";
-export const CREATE_EXAM_FAIL = "CREATE_EXAM_FAIL";
+// // Create exam
+// export const CREATE_EXAM_REQUEST = "CREATE_EXAM_REQUEST";
+// export const CREATE_EXAM_SUCCESS = "CREATE_EXAM_SUCCESS";
+// export const CREATE_EXAM_FAIL = "CREATE_EXAM_FAIL";
 
-// Get exams
-export const GET_EXAMS_REQUEST = "GET_EXAMS_REQUEST";
-export const GET_EXAMS_SUCCESS = "GET_EXAMS_SUCCESS";
-export const GET_EXAMS_FAIL = "GET_EXAMS_FAIL";
+// // Get exams
+// export const GET_EXAMS_REQUEST = "GET_EXAMS_REQUEST";
+// export const GET_EXAMS_SUCCESS = "GET_EXAMS_SUCCESS";
+// export const GET_EXAMS_FAIL = "GET_EXAMS_FAIL";
 
-// Get exam by ID
-export const GET_EXAM_BY_ID_REQUEST = "GET_EXAM_BY_ID_REQUEST";
-export const GET_EXAM_BY_ID_SUCCESS = "GET_EXAM_BY_ID_SUCCESS";
-export const GET_EXAM_BY_ID_FAIL = "GET_EXAM_BY_ID_FAIL";
+// // Get exam by ID
+// export const GET_EXAM_BY_ID_REQUEST = "GET_EXAM_BY_ID_REQUEST";
+// export const GET_EXAM_BY_ID_SUCCESS = "GET_EXAM_BY_ID_SUCCESS";
+// export const GET_EXAM_BY_ID_FAIL = "GET_EXAM_BY_ID_FAIL";
 
-// Edit exam
-export const EDIT_EXAM_REQUEST = "EDIT_EXAM_REQUEST";
-export const EDIT_EXAM_SUCCESS = "EDIT_EXAM_SUCCESS";
-export const EDIT_EXAM_FAIL = "EDIT_EXAM_FAIL";
+// // Edit exam
+// export const EDIT_EXAM_REQUEST = "EDIT_EXAM_REQUEST";
+// export const EDIT_EXAM_SUCCESS = "EDIT_EXAM_SUCCESS";
+// export const EDIT_EXAM_FAIL = "EDIT_EXAM_FAIL";
 
-// Delete exam
-export const DELETE_EXAM_REQUEST = "DELETE_EXAM_REQUEST";
-export const DELETE_EXAM_SUCCESS = "DELETE_EXAM_SUCCESS";
-export const DELETE_EXAM_FAIL = "DELETE_EXAM_FAIL";
-
-// Submit exam
-export const EXAM_SUBMIT_REQUEST = "EXAM_SUBMIT_REQUEST";
-export const EXAM_SUBMIT_SUCCESS = "EXAM_SUBMIT_SUCCESS";
-export const EXAM_SUBMIT_FAIL = "EXAM_SUBMIT_FAIL";
-
-// Get submitted exam data
-export const GET_SUBMIT_REQUEST = "GET_SUBMIT_REQUEST";
-export const GET_SUBMIT_SUCCESS = "GET_SUBMIT_SUCCESS";
-export const GET_SUBMIT_FAIL = "GET_SUBMIT_FAIL";
-
-// Questions
-export const CREATE_QUESTION_REQUEST = "CREATE_QUESTION_REQUEST";
-export const CREATE_QUESTION_SUCCESS = "CREATE_QUESTION_SUCCESS";
-export const CREATE_QUESTION_FAIL = "CREATE_QUESTION_FAIL";
-
-export const GET_QUESTIONS_REQUEST = "GET_QUESTIONS_REQUEST";
-export const GET_QUESTIONS_SUCCESS = "GET_QUESTIONS_SUCCESS";
-export const GET_QUESTIONS_FAIL = "GET_QUESTIONS_FAIL";
-
-export const UPDATE_QUESTION_REQUEST = "UPDATE_QUESTION_REQUEST";
-export const UPDATE_QUESTION_SUCCESS = "UPDATE_QUESTION_SUCCESS";
-export const UPDATE_QUESTION_FAIL = "UPDATE_QUESTION_FAIL";
-
-export const DELETE_QUESTION_REQUEST = "DELETE_QUESTION_REQUEST";
-export const DELETE_QUESTION_SUCCESS = "DELETE_QUESTION_SUCCESS";
-export const DELETE_QUESTION_FAIL = "DELETE_QUESTION_FAIL";
-
-
-
-// //create exam
-// export const  CREATE_EXAM = "CREATE_EXAM"; 
-// export const  CREATE_EXAM_FAIL = "CREATE_EXAM_FAIL";
-
-// //get exam
-// export const  GET_EXAMS = "GET_EXAMS";
-// export const  GET_EXAM_FAIL = "GET_EXAM_FAIL";
-
-// export const GET_EXAM_BY_ID = "GET_EXAM_BY_ID";
-
-
-// //edit exam
-// export const EDIT_EXAM_SUCCESS = 'EDIT_EXAM_SUCCESS';
-// export const EDIT_EXAM_FAILURE = 'EDIT_EXAM_SUCCESS';
-
-// //delete exam
-// export const DELETE_EXAM = "DELETE_EXAM";
+// // Delete exam
+// export const DELETE_EXAM_REQUEST = "DELETE_EXAM_REQUEST";
+// export const DELETE_EXAM_SUCCESS = "DELETE_EXAM_SUCCESS";
 // export const DELETE_EXAM_FAIL = "DELETE_EXAM_FAIL";
 
-// export const EXAM_SUBMIT_REQUEST = 'EXAM_SUBMIT_REQUEST';
-// export const EXAM_SUBMIT_SUCCESS = 'EXAM_SUBMIT_SUCCESS';
-// export const EXAM_SUBMIT_FAIL = 'EXAM_SUBMIT_FAIL';
+// // Submit exam
+// export const EXAM_SUBMIT_REQUEST = "EXAM_SUBMIT_REQUEST";
+// export const EXAM_SUBMIT_SUCCESS = "EXAM_SUBMIT_SUCCESS";
+// export const EXAM_SUBMIT_FAIL = "EXAM_SUBMIT_FAIL";
+
+// // Get submitted exam data
+// export const GET_SUBMIT_REQUEST = "GET_SUBMIT_REQUEST";
+// export const GET_SUBMIT_SUCCESS = "GET_SUBMIT_SUCCESS";
+// export const GET_SUBMIT_FAIL = "GET_SUBMIT_FAIL";
+
+// // Questions
+// export const CREATE_QUESTION_REQUEST = "CREATE_QUESTION_REQUEST";
+// export const CREATE_QUESTION_SUCCESS = "CREATE_QUESTION_SUCCESS";
+// export const CREATE_QUESTION_FAIL = "CREATE_QUESTION_FAIL";
+
+// export const GET_QUESTIONS_REQUEST = "GET_QUESTIONS_REQUEST";
+// export const GET_QUESTIONS_SUCCESS = "GET_QUESTIONS_SUCCESS";
+// export const GET_QUESTIONS_FAIL = "GET_QUESTIONS_FAIL";
+
+// export const UPDATE_QUESTION_REQUEST = "UPDATE_QUESTION_REQUEST";
+// export const UPDATE_QUESTION_SUCCESS = "UPDATE_QUESTION_SUCCESS";
+// export const UPDATE_QUESTION_FAIL = "UPDATE_QUESTION_FAIL";
+
+// export const DELETE_QUESTION_REQUEST = "DELETE_QUESTION_REQUEST";
+// export const DELETE_QUESTION_SUCCESS = "DELETE_QUESTION_SUCCESS";
+// export const DELETE_QUESTION_FAIL = "DELETE_QUESTION_FAIL";
+
+
+
+//create exam
+export const  CREATE_EXAM = "CREATE_EXAM"; 
+export const  CREATE_EXAM_FAIL = "CREATE_EXAM_FAIL";
+
+//get exam
+export const  GET_EXAMS = "GET_EXAMS";
+export const  GET_EXAM_FAIL = "GET_EXAM_FAIL";
+
+export const GET_EXAM_BY_ID = "GET_EXAM_BY_ID";
+
+
+//edit exam
+export const EDIT_EXAM_SUCCESS = 'EDIT_EXAM_SUCCESS';
+export const EDIT_EXAM_FAILURE = 'EDIT_EXAM_SUCCESS';
+
+//delete exam
+export const DELETE_EXAM = "DELETE_EXAM";
+export const DELETE_EXAM_FAIL = "DELETE_EXAM_FAIL";
+
+export const EXAM_SUBMIT_REQUEST = 'EXAM_SUBMIT_REQUEST';
+export const EXAM_SUBMIT_SUCCESS = 'EXAM_SUBMIT_SUCCESS';
+export const EXAM_SUBMIT_FAIL = 'EXAM_SUBMIT_FAIL';

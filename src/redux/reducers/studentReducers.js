@@ -5,7 +5,8 @@ const initialState = {
     error: null
 };
 
-const studentReducer = (state = initialState, action) => {
+//students reducer
+export const studentReducer = (state = initialState, action) => {
     switch (action.type) {
         case 'GET_ALL_STUDENTS':
             return { ...state, students: action.payload };
@@ -58,4 +59,3 @@ const studentReducer = (state = initialState, action) => {
             return state;
     }
 };
-export default studentReducer;
