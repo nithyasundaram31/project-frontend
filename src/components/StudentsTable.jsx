@@ -1,6 +1,6 @@
 import { FaEye, FaSpinner, FaTrash, FaLock, FaLockOpen } from "react-icons/fa";
 
-const StudentTable = ({ students, isLoading, togglePermission, onDelete, onView, onRoleChange }) => {
+const StudentTable = ({ students=[], isLoading, togglePermission, onDelete, onView, onRoleChange }) => {
     return (
         <div className="container p-4 max-w-full overflow-x-auto">
             {isLoading ? (
