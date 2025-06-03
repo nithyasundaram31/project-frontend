@@ -40,7 +40,7 @@ export const createStudentsActivity = (activityData) => async (dispatch) => {
         const { data } = await instance.post('/api/students/activity', activityData);
         dispatch({ type: 'CREATE_STUDENTS_ACTIVITY', payload: data });
     } catch (error) {
-        console.error(error);
+        // console.error(error);
         toast.error(error?.response?.data?.message || 'Some error');
     }
 };

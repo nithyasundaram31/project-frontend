@@ -3,7 +3,7 @@ import { EXAM_SUBMIT_REQUEST, EXAM_SUBMIT_SUCCESS, EXAM_SUBMIT_FAIL } from "../.
 const initialState = {
     loading: false,
     success: false,
-    submitedData: [],
+    submittedData: [],
     error: null,
 };
 
@@ -31,7 +31,7 @@ const examSubmitReducer = (state = initialState, action) => {
                 ...state,
                 loading: false,
                 success: true,
-                submitedData: action.payload,
+                submittedData: action.payload,
                 error: null,
             }
 
