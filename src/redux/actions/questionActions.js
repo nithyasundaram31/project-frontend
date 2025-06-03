@@ -6,6 +6,7 @@ import { CREATE_QUESTION, DELETE_QUESTION, GET_QUESTIONS, UPDATE_QUESTION } from
 
 // Create Question
 export const createQuestion = (questionData) => async (dispatch) => {
+     console.log("Sending Question Data to backend:", questionData);
     try {
         const response = await instance.post('/api/questions/add', questionData);
         toast.success(response?.data?.message || 'Question created successfully!');

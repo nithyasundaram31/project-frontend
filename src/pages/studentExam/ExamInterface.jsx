@@ -66,31 +66,82 @@ const ExamInterface = () => {
             }
         };
         fetchData();  // Call the async fetch function
+        
     }, [dispatch, fetchExams]);
 
+    // const submitExams = useCallback(async () => {
+    //     try {
+    //         const submitData = {
+    //             examId: id,
+    //             answers,
+    //             warningCount,
+    //         }
+    //         await dispatch(submitExam(submitData));
+    //         let activityData = {
+    //             acivityType: "submitted exam",
+    //             examId: id,
+    //             exam: examData.name,
+    //             name: user.name,
+    //             email: user.email,
+    //             userId: user.id
+    //         }
+    //         await dispatch(createStudentsActivity(activityData));
+    //         setExamStatus('submitted');
+    //         document.exitFullscreen();
+    //     } catch (error) {
+    //         console.error('Failed to submit exam:', error);
+    //     }
+    // }, [warningCount, id, examData, user, answers, dispatch]);
+
     const submitExams = useCallback(async () => {
-        try {
-            const submitData = {
-                examId: id,
-                answers,
-                warningCount,
-            }
-            await dispatch(submitExam(submitData));
-            let activityData = {
-                acivityType: "submitted exam",
-                examId: id,
-                exam: examData.name,
-                name: user.name,
-                email: user.email,
-                userId: user.id
-            }
-            await dispatch(createStudentsActivity(activityData));
-            setExamStatus('submitted');
-            document.exitFullscreen();
-        } catch (error) {
-            console.error('Failed to submit exam:', error);
+    try {
+        const submitData = {
+            examId: id,
+            answers,
+            warningCount,
         }
-    }, [warningCount, id, examData, user, answers, dispatch]);
+        
+        // Call the redux action and wait for response
+        const result = await dispatch(submitExam(submitData));
+        
+        // Check if submission failed
+        if (result.error) {
+            console.log('Submission failed:', result.message);
+            
+            // Handle specific cases
+            if (result.message?.includes('already submitted')) {
+                // If already submitted, show success page but don't allow resubmission
+                setExamStatus('submitted');
+                if (document.fullscreenElement) {
+                    document.exitFullscreen().catch(console.error);
+                }
+            }
+            return; // Stop execution here
+        }
+        
+        // Success case - create activity log
+        let activityData = {
+            activityType: "submitted exam",
+            examId: id,
+            exam: examData.name,
+            name: user.name,
+            email: user.email,
+            userId: user.id
+        }
+        
+        await dispatch(createStudentsActivity(activityData));
+        setExamStatus('submitted');
+        
+        // Safe exit fullscreen
+        if (document.fullscreenElement) {
+            document.exitFullscreen().catch(console.error);
+        }
+        
+    } catch (error) {
+        console.error('Failed to submit exam:', error);
+        toast.error('Failed to submit exam. Please try again.');
+    }
+}, [warningCount, id, examData, user, answers, dispatch]);
 
     // Timer countdown
     useEffect(() => {
@@ -261,7 +312,7 @@ const ExamInterface = () => {
                         <h1 className="text-2xl font-bold mb-6">{examData.name}</h1>
                         {/* questions list */}
                         {questions.map((question, index) => (
-                            <div key={question.id} className="mb-8">
+                            <div key={question._id} className="mb-8">
                                 <p className="font-semibold mb-4">
                                     {index + 1}. {question.question}
                                 </p>
@@ -269,7 +320,7 @@ const ExamInterface = () => {
                                 {question.questionType === "multiple-choice" ? (
                                     <div className="space-y-2">
                                         {question.options.map((option, optIndex) => (
-                                            <label key={optIndex} className="flex items-center space-x-2">
+                                            <label key={`${question._id}-${optIndex}`} className="flex items-center space-x-2">
                                                 <input
                                                     type="radio"
                                                     name={`question-${question.id}`}
@@ -286,7 +337,7 @@ const ExamInterface = () => {
                                 ) : question.questionType === "true-false" ? (
                                     <div className="space-y-2">
                                         {['True', 'False'].map((option) => (
-                                            <label key={option} className="flex items-center space-x-2">
+                                            <label key={`${question._id}-${option}`} className="flex items-center space-x-2">
                                                 <input
                                                     type="radio"
                                                     name={`question-${question.id}`}

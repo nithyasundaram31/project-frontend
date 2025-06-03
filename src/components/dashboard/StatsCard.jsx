@@ -1,40 +1,26 @@
 import { Link } from "react-router-dom";
 
 const StatsCard = ({ title, value, icon: Icon, trend, bgColor }) => {
+    // absolute path for links
+    const viewLink =
+        title === "Total Students"
+            ? "/admin/dashboard/students"
+            : "/admin/dashboard/exams";
+
     return (
         <div className={`${bgColor} p-6 rounded-lg shadow-lg`}>
             <div className="flex items-center justify-between">
                 <div>
                     <p className="text-black text-sm">{title}</p>
                     <h3 className="text-2xl font-bold mt-2">{value}</h3>
-                    {title === "Total Students" ? (
-                        <Link 
-                            to="/students" // Absolute path for clarity
-                            className="text-black text-sm hover:underline"
-                            aria-label="View Students"
-                        >
-                            View Students {'→'}
-                        </Link>
-                    ) : (
-                        <Link 
-                            to="/exams" // Absolute path for clarity
-                            className="text-sm hover:underline mt-1"
-                            aria-label="View Exams"
-                        >
-                            View Exam {'→'}
-                        </Link>
-                    )}
-                    {/* Uncomment below if you want to show trend */}
-                    {/* trend && (
-                        <div className={`mt-1 ${trend > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                            {trend > 0 ? `↑ ${trend}%` : `↓ ${Math.abs(trend)}%`}
-                        </div>
-                    ) */}
+                    <Link to={viewLink} className="text-black text-sm hover:underline">
+                        {title === "Total Students" ? "View Students →" : "View Exam →"}
+                    </Link>
                 </div>
                 <Icon className="h-8 w-8 text-blue-500" />
             </div>
         </div>
-    )
+    );
 };
 
-export default StatsCard; 
+export default StatsCard;

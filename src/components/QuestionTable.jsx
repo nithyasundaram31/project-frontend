@@ -1,6 +1,6 @@
 import { FaEdit, FaTrash, FaSpinner } from "react-icons/fa";
 
-const QuestionTable = ({ questions, isLoading, onEdit, onDelete }) => {    
+const QuestionTable = ({ questions, isLoading, onEdit, onDelete }) => {
     return (
         <div className="container mx-auto p-2">
             {isLoading ? (
@@ -22,7 +22,7 @@ const QuestionTable = ({ questions, isLoading, onEdit, onDelete }) => {
                                 <th className="px-4 py-2 truncate border">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="relative ">
+                        <tbody className="relative">
                             {questions && questions.length > 0 ? (
                                 questions.map((question, index) => (
                                     <tr key={question._id} className="hover:bg-gray-50">
@@ -31,7 +31,10 @@ const QuestionTable = ({ questions, isLoading, onEdit, onDelete }) => {
                                         <td className="px-4 py-2 border text-left truncate">{question.correctAnswer || "--"}</td>
                                         <td className="px-4 py-2 border text-center">{question.questionType}</td>
                                         <td className="px-4 py-2 border text-center">{question.difficulty}</td>
-                                        <td className="px-4 py-2 border text-center">{question.exam}</td>
+                                        {/* Here is the fixed line */}
+                                        <td className="px-4 py-2 border text-center">
+                                            {question.exam ? question.exam.name : '--'}
+                                        </td>
                                         <td className="px-4 py-2 border text-center">
                                             <button
                                                 onClick={() => onEdit(question)}

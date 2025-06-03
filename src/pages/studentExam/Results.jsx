@@ -20,6 +20,7 @@ const Results = () => {
                 setIsLoading(false);
             }
         };
+        
 
         if (!hasFetchedExams.current) {
             fetchExams();

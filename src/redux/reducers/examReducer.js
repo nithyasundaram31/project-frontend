@@ -4,7 +4,7 @@ const initialState = {
     exams: [],
     user: [],
     submittedData: [],
-    examDetails: [],
+    examDetails:null,
     isLoading: false,
     error: null,
 };

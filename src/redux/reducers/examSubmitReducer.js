@@ -22,7 +22,7 @@ const examSubmitReducer = (state = initialState, action) => {
                 ...state,
                 loading: false,
                 success: true,
-                submitedData: action.payload,
+                submittedData: action.payload,
                 error: null,
             };
 

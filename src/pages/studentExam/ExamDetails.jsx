@@ -36,17 +36,23 @@ const ExamDetails = () => {
 
     // Handle view exam
     const handleView = async (id) => {
-        let activityData = {
-            acivityType: "started exam",
-            examId: id,
-            exam: examDetails?.examData.name,
-            name: user.name,
-            email: user.email,
-            userId: user.id
-        }
-        await dispatch(createStudentsActivity(activityData));
-        navigate(`/student/dashboard/start-assessment/${id}`);
-    };
+  if (!examDetails || !examDetails.examData) {
+    return toast.error("Exam data not loaded properly!");
+  }
+
+  let activityData = {
+    activityType: "started exam",
+    examId: id,
+    exam: examDetails.examData.name,
+    name: user.name,
+    email: user.email,
+    userId: user.id
+  };
+
+  await dispatch(createStudentsActivity(activityData));
+  navigate(`/student/dashboard/start-assessment/${id}`);
+};
+
 
     // Show loading spinner if still fetching the data
     if (loading) {
@@ -69,7 +75,7 @@ const ExamDetails = () => {
     }
 
     // If no examDetails are found after fetching
-    if (!examDetails) {
+    if (!examDetails || !examDetails.examData ) {
         return (
             <div className="p-6 text-center">
                 <h1 className="text-2xl font-bold text-red-600">Exam Not Found</h1>
@@ -98,14 +104,15 @@ const ExamDetails = () => {
             </ul>
 
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Terms & Conditions</h2>
-            <p className="text-gray-600 mb-6">
-                Before you start the assessment, please read and agree to the following terms and conditions:
-                <ul className="list-disc list-inside mt-4">
-                    <li>No unauthorized assistance or materials are allowed.</li>
-                    <li>All answers must be your own work.</li>
-                    <li>Once started, the assessment must be completed within the allotted time.</li>
-                </ul>
-            </p>
+            <p className="text-gray-600 mb-2">
+  Before you start the assessment, please read and agree to the following terms and conditions:
+</p>
+<ul className="list-disc list-inside text-gray-600 mb-6">
+  <li>No unauthorized assistance or materials are allowed.</li>
+  <li>All answers must be your own work.</li>
+  <li>Once started, the assessment must be completed within the allotted time.</li>
+</ul>
+
 
             {/* Integrate Proctoring Info */}
             <ProctoringInfo />

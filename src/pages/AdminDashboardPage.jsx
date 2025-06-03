@@ -4,6 +4,7 @@ import StatsCard from '../components/dashboard/StatsCard';
 import UpcomingExams from '../components/dashboard/UpcomingExams';
 import RecentActivity from '../components/dashboard/RecentActivity';
 import QuickActions from '../components/dashboard/QuickActions';
+// import UpcomingExams from '../components/dashboard/UpcomingExams'; // ✅ admin version
 import { useDispatch, useSelector } from 'react-redux';
 import { getExams } from '../redux/actions/examActions';
 import { getAllStudents, getStudentsActivity } from '../redux/actions/studentActions';
@@ -31,6 +32,8 @@ const AdminDashboardPage = () => {
       hasFetchedExams.current = true;
     }
   }, [dispatch, fetchExams]);
+
+  console.log("Redux Exams:", exams);
 
   // Date calculations
   const today = new Date();
@@ -64,6 +67,7 @@ const AdminDashboardPage = () => {
       <QuickActions />
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        {/* ✅ THIS IS WHERE YOU USE IT */}
         <UpcomingExams exams={upcomingExams} />
         <RecentActivity activities={activity?.activities} />
       </div>

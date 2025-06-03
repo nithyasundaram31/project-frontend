@@ -60,18 +60,19 @@ const ProfileUpdate = () => {
 
     // Handle form submission
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            const response = await dispatch(updateProfile(formData));
-            if (response) {
-                dispatch(getProfile(JSON.stringify(response._id)));
-            }
-        } catch (error) {
-            console.error('Error updating profile:', error);
-            toast.error('Failed to update profile');
-            <ErrorHandler error={error} />
+    e.preventDefault();
+    try {
+        const response = await dispatch(updateProfile(formData));
+        if (response) {
+            // S U R E: Don't use JSON.stringify!
+            dispatch(getProfile(response._id || response.id));
         }
-    };
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        toast.error('Failed to update profile');
+        <ErrorHandler error={error} />
+    }
+};
 
     return (
         <div className="max-w-md mx-auto bg-white border border-slate-400 shadow-md overflow p-8 pb-16 rounded-lg shadow-2xl">

@@ -6,7 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Register from './components/Register';
 import Login from './components/Login';
 import StudentDashboard from './pages/studentPages/StudentDashboard';
-import AdminDashboard from './pages/AdminDashboard'
+import AdminDashboard from './pages/AdminDashboard';
 import ProfileUpdate from './pages/ProfilePage';
 import ExamScheduling from './pages/ExamScheduling';
 import StudentsList from './pages/StudentsList';
@@ -23,29 +23,51 @@ import ExamDetails from './pages/studentExam/ExamDetails';
 import ExamInterface from './pages/studentExam/ExamInterface';
 import Results from './pages/studentExam/Results';
 import StudentResult from './components/StudentResults';
-import instance from './services/instance'; // Adjust path if needed
 
 function App() {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
-  console.log("Auth State:", { isAuthenticated, user });
-  console.log("Full state:", useSelector(state => state));
-  //  console.log("BaseURL:", import.meta.env.VITE_BACKEND_URL);
-  // console.log("Axios BaseURL:", instance.defaults.baseURL);
-  console.log("Auth State:", { isAuthenticated, user });
-  console.log("LocalStorage Token:", localStorage.getItem('token'));
-  console.log("LocalStorage User:", localStorage.getItem('user'));
 
   return (
     <Routes>
-      <Route path="/" element={isAuthenticated ? <Navigate to={`/${user?.role}/dashboard`} /> : <Login />} />
+      {/* Root route redirects to dashboard based on role or login page */}
+      <Route
+        path="/"
+        element={
+          isAuthenticated ? (
+            <Navigate to={`/${user?.role}/dashboard`} />
+          ) : (
+            <Login />
+          )
+        }
+      />
+
+      {/* Public routes */}
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
-
       <Route path="/about" element={<About />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />
+      <Route path="/students" element={<StudentsList />} />
 
-      <Route path="/student/dashboard" element={isAuthenticated && user?.role === 'student' ? <StudentDashboard /> : <Navigate to="/login" />} >
+      {/* Top-level /profile route accessible only if authenticated */}
+      <Route
+        path="/profile"
+        element={
+          isAuthenticated ? <ProfileUpdate /> : <Navigate to="/login" />
+        }
+      />
+
+      {/* Student dashboard routes */}
+      <Route
+        path="/student/dashboard"
+        element={
+          isAuthenticated && user?.role === 'student' ? (
+            <StudentDashboard />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      >
         <Route path="" element={<StudentDashboardPage />} />
         <Route path="profile" element={<ProfileUpdate />} />
         <Route path="exams" element={<UpcomingExams />} />
@@ -54,7 +76,17 @@ function App() {
         <Route path="results" element={<Results />} />
       </Route>
 
-      <Route path="/admin/dashboard" element={isAuthenticated && user?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/login" />} >
+      {/* Admin dashboard routes */}
+      <Route
+        path="/admin/dashboard"
+        element={
+          isAuthenticated && user?.role === 'admin' ? (
+            <AdminDashboard />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      >
         <Route path="" element={<AdminDashboardPage />} />
         <Route path="profile" element={<ProfileUpdate />} />
         <Route path="exams" element={<ExamScheduling />} />
@@ -64,7 +96,11 @@ function App() {
         <Route path="student-result/:id" element={<StudentResult />} />
       </Route>
 
+      {/* Error route */}
       <Route path="/error" element={<ErrorPage />} />
+
+      {/* Catch all unmatched routes and redirect or show error */}
+      <Route path="*" element={<Navigate to="/error" />} />
     </Routes>
   );
 }
