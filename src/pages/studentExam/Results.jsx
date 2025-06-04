@@ -21,6 +21,7 @@ const Results = () => {
             }
         };
         
+        
 
         if (!hasFetchedExams.current) {
             fetchExams();
