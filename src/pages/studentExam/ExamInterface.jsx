@@ -78,7 +78,7 @@ const ExamInterface = () => {
             }
             await dispatch(submitExam(submitData));
             let activityData = {
-                acivityType: "submitted exam",
+                activityType: "submitted exam",
                 examId: id,
                 exam: examData.name,
                 name: user.name,
@@ -249,14 +249,15 @@ const ExamInterface = () => {
                         </div>
                     </div>
 
-                    <div className="fixed top-4 left-4 w-48 opacity-0 pointer-events-none">
-                        <Webcam
-                            ref={webcamRef}
-                            audio={false}
-                            screenshotFormat="image/jpeg"
-                            className="w-full rounded"
-                        />
-                    </div>
+                    <div className="fixed top-4 left-4 w-48 opacity-0 pointer-events-none z-50">
+    <Webcam
+        ref={webcamRef}
+        audio={false}
+        screenshotFormat="image/jpeg"
+        className="w-full rounded"
+    />
+</div>
+
 
                     <div className="max-w-3xl mx-auto mt-20 bg-white p-6 rounded shadow">
                         <h1 className="text-2xl font-bold mb-6">{examData.name}</h1>

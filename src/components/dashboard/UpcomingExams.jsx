@@ -30,8 +30,12 @@ const UpcomingExams = ({ exams = [] }) => {
               <div>
                 <h3 className="font-medium">{exam.name}</h3>
                 <p className="text-sm text-gray-500">
-                  {formatDateToInput(exam.date)} (ends same day)
-                </p>
+  {new Date(exam.date).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })} (ends same day)
+</p>
               </div>
               <button
                 onClick={() => handleView(exam._id)}

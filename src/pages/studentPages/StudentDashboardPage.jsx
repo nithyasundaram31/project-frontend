@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { getSubmitted } from "../../redux/actions/submitExam";
 
 const StudentDashboardPage = () => {
-    const { submittedData } = useSelector((state) => state.examSubmit); // Fixed spelling
+    const { submittedData } = useSelector((state) => state.examSubmit);
     const [isLoading, setIsLoading] = useState(true);
     const dispatch = useDispatch();
     const hasFetchedExams = useRef(false);
@@ -13,7 +13,7 @@ const StudentDashboardPage = () => {
     const fetchExams = useCallback(async () => {
         try {
             setIsLoading(true);
-            dispatch(getSubmitted());
+            await dispatch(getSubmitted());
         } catch (error) {
             console.error("Error fetching submitted exams:", error);
         } finally {
@@ -22,31 +22,11 @@ const StudentDashboardPage = () => {
     }, [dispatch]);
 
     useEffect(() => {
-        const loadExams = () => {
-            const cachedData = localStorage.getItem('submittedData');
-            if (cachedData) {
-                const parsedData = JSON.parse(cachedData);
-                dispatch({
-                    type: 'GET_SUBMIT_SUCCESS',
-                    payload: parsedData,
-                });
-                setIsLoading(false);
-            } else {
-                fetchExams();
-            }
-        };
-
         if (!hasFetchedExams.current) {
-            loadExams();
+            fetchExams(); // Always fetch fresh data
             hasFetchedExams.current = true;
         }
-    }, [dispatch, fetchExams]);
-
-    useEffect(() => {
-        if (submittedData?.length) {
-            localStorage.setItem('submittedData', JSON.stringify(submittedData));
-        }
-    }, [submittedData]);
+    }, [fetchExams]);
 
     if (isLoading) {
         return (
@@ -56,7 +36,11 @@ const StudentDashboardPage = () => {
         );
     }
 
-    const sortedSubmissions = submittedData?.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+    const sortedSubmissions = [...(submittedData || [])].sort(
+        (a, b) =>
+            new Date(b.submittedAt || b.createdAt) - new Date(a.submittedAt || a.createdAt)
+    );
+
     const recentSubmission = sortedSubmissions?.[0];
 
     return (
@@ -96,8 +80,13 @@ const StudentDashboardPage = () => {
                                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                                         {recentSubmission ? (
                                             <>
-                                                {((recentSubmission.totalMarks / recentSubmission.totalQuestions) * 100).toFixed(2)}%
-                                                <span className="ml-2 text-gray-500">({recentSubmission.totalMarks} out of {recentSubmission.totalQuestions})</span>
+                                                {recentSubmission.totalQuestions > 0
+                                                    ? ((recentSubmission.correctAnswers / recentSubmission.totalQuestions) * 100).toFixed(2)
+                                                    : 0
+                                                }%
+                                                <span className="ml-2 text-gray-500">
+                                                    ({recentSubmission.correctAnswers || 0} out of {recentSubmission.totalQuestions || 0})
+                                                </span>
                                             </>
                                         ) : (
                                             <span className="text-gray-500">No submission found</span>
@@ -110,7 +99,9 @@ const StudentDashboardPage = () => {
                                     <dd className="mt-1 text-sm sm:mt-0 sm:col-span-2">
                                         {recentSubmission ? (
                                             (() => {
-                                                const percentage = (recentSubmission.totalMarks / recentSubmission.totalQuestions) * 100;
+                                                const percentage = recentSubmission.totalQuestions > 0
+                                                    ? (recentSubmission.correctAnswers / recentSubmission.totalQuestions) * 100
+                                                    : 0;
                                                 const statusText = percentage >= 50 ? 'Passed' : 'Failed';
                                                 const statusBgClass = percentage >= 50 ? 'bg-green-500 text-black' : 'bg-red-500 text-white';
 

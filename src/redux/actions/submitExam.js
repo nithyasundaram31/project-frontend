@@ -114,7 +114,7 @@ export const getSubmitted = () => async (dispatch) => {
             payload: errorMessage,
         });
         
-        console.error('Get Submitted Error:', error);
+        // console.error('Get Submitted Error:', error);
         toast.error(errorMessage);
         
         return { error: true, message: errorMessage };
