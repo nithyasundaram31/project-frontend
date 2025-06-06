@@ -47,12 +47,7 @@ const AdminDashboardPage = () => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Upcoming exams (from today onwards)
-  const upcomingExams = exams ? exams.filter(exam => new Date(exam.date) >= today) : [];
-
-  // Active exams: exams happening today
-  // Active exams: exams scheduled for today (exact date match)
-// Active exams: exams scheduled for today AND not already submitted
+  
 // Active exams: exams scheduled for today AND not already submitted
 const activeExams = Array.isArray(exams) ? exams.filter(exam => {
   if (!exam || !exam.date || !exam._id) return false;
@@ -68,6 +63,27 @@ const activeExams = Array.isArray(exams) ? exams.filter(exam => {
 
   return isToday && !isAlreadySubmitted;
 }) : [];
+
+// Upcoming exams (future only, strictly greater than today)
+const upcomingExams = Array.isArray(exams)
+  ? exams.filter(exam => {
+      if (!exam?.date || !exam._id) return false;
+
+      const examDate = new Date(exam.date);
+      const isFuture = examDate > today;
+      const isToday = examDate.toDateString() === today.toDateString();
+
+      const isAlreadySubmitted = Array.isArray(submittedData) && submittedData.some(sub => {
+        if (!sub || !sub.examId) return false;
+        const submittedExamId = typeof sub.examId === 'object' ? sub.examId._id : sub.examId;
+        return submittedExamId?.toString() === exam._id.toString();
+      });
+
+      //  Only future exams (not today) that are NOT submitted
+      return isFuture && !isAlreadySubmitted && !isToday;
+    })
+  : [];
+
 
 
   // Completion Rate based on unique exam submissions

@@ -34,7 +34,7 @@ const UpcomingExams = ({ exams = [] }) => {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-  })} (ends same day)
+  })} 
 </p>
               </div>
               <button
