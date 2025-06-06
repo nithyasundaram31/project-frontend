@@ -52,9 +52,21 @@ const AdminDashboardPage = () => {
 
   // Active exams: exams happening today
   // Active exams: exams scheduled for today (exact date match)
-const activeExams = exams ? exams.filter(exam => {
+// Active exams: exams scheduled for today AND not already submitted
+// Active exams: exams scheduled for today AND not already submitted
+const activeExams = Array.isArray(exams) ? exams.filter(exam => {
+  if (!exam || !exam.date || !exam._id) return false;
+
   const examDate = new Date(exam.date);
-  return examDate.toDateString() === today.toDateString();
+  const isToday = examDate.toDateString() === today.toDateString();
+
+  const isAlreadySubmitted = Array.isArray(submittedData) && submittedData.some(sub => {
+    if (!sub || !sub.examId) return false;
+    const submittedExamId = typeof sub.examId === 'object' ? sub.examId._id : sub.examId;
+    return submittedExamId?.toString() === exam._id.toString();
+  });
+
+  return isToday && !isAlreadySubmitted;
 }) : [];
 
 
