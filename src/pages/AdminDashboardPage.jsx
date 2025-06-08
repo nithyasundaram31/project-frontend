@@ -39,9 +39,10 @@ const AdminDashboardPage = () => {
 
   // Debug log
   useEffect(() => {
-    console.log("📊 All Exams:", exams);
-    console.log("✅ Submitted Data:", submittedData);
-  }, [exams, submittedData]);
+  console.log("📊 All Exams:", exams);
+  console.log("✅ Submitted Data:", submittedData);
+  console.log("🔥 Activity Data:", activity); // 👉 Add this line
+}, [exams, submittedData, activity]);
 
   // Date calculations
   const today = new Date();
@@ -119,7 +120,7 @@ const upcomingExams = Array.isArray(exams)
   return (
     <div>
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 pb-16">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 pt-12 items-center mt-8 pb-16">
         {stats.map((stat) => (
           <StatsCard key={stat.title} {...stat} />
         ))}
@@ -130,7 +131,7 @@ const upcomingExams = Array.isArray(exams)
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <UpcomingExams exams={upcomingExams} />
-        <RecentActivity activities={activity?.activities} />
+        <RecentActivity activities={activity} />
       </div>
     </div>
   );

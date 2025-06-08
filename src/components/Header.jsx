@@ -60,7 +60,9 @@ const Header = (props) => {
     }, [dropdownOpen]);
 
     return (
-        <header className="col-span-full flex justify-between items-center sticky top-0 p-2 text-white bg-gradient-to-r from-blue-500 to-indigo-700">
+        // <header className="col-span-full flex justify-between items-center sticky top-0 p-2 text-white bg-gradient-to-l from-green-600 to-blue-600 ">
+        <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center p-2 text-white bg-gradient-to-l from-green-600 to-blue-600 shadow-md">
+
             {/* Hamburger Icon for mobile */}
             <div className="lg:hidden">
                 <button onClick={toggle} className="p-2 focus:outline-none">

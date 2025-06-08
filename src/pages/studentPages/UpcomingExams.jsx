@@ -59,7 +59,7 @@ const UpcomingExams = () => {
     .sort((a, b) => new Date(a.date) - new Date(b.date));
 
   return (
-    <div className="p-4 max-w-7xl mx-auto">
+    <div className="p-4 max-w-7xl mt-16 mx-auto">
       <div className="mb-6 flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-blue-500">Exams</h1>

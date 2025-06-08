@@ -165,7 +165,7 @@ const QuestionBank = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className=" mt-10 p-6">
       <ToastContainer />
       <h1 className="text-xl font-bold text-center text-blue-500 mb-4">Question Bank</h1>
 

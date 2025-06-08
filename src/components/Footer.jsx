@@ -2,7 +2,7 @@ import React from 'react';
 
 const Footer = () => {
     return (
-        <footer className="bg-gradient-to-r from-blue-500 to-indigo-700 fixed bottom-0 w-full text-white p-3">
+        <footer className=" bottom-0 w-full text-white p-3">
             <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
                 {/* Left Section - Links */}
                 <div className="hidden md:flex flex-wrap justify-center md:justify-start mb-4 md:mb-0">

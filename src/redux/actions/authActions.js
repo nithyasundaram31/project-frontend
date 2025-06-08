@@ -16,7 +16,7 @@ export const register = (userData) => async (dispatch) => {
 export const login = (userData) => async (dispatch) => {
   try {
     const response = await instance.post('/api/auth/login', userData);
-    toast.success(response.data?.message || 'Login successful');
+    // toast.success(response.data?.message || 'Login successful');
     dispatch({ type: 'LOGIN_SUCCESS', payload: response.data });
     // Save user and token to localStorage
     localStorage.setItem('user', JSON.stringify(response.data.user));

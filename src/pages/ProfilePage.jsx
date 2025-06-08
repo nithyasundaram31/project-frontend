@@ -75,7 +75,7 @@ const ProfileUpdate = () => {
 };
 
     return (
-        <div className="max-w-md mx-auto bg-white border border-slate-400 shadow-md overflow p-8 pb-16 rounded-lg shadow-2xl">
+        <div className="max-w-md  mt-14 mx-auto bg-white border border-slate-400 shadow-md overflow p-8 pb-16 rounded-lg shadow-2xl">
             <h2 className="text-2xl font-bold mb-6 text-blue-500 text-center">Profile</h2>
             {isLoading ? (
                 <div className="text-center">

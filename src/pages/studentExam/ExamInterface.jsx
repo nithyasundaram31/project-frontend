@@ -237,7 +237,7 @@ const ExamInterface = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 p-4">
+        <div className="min-h-screen bg-gray-50 p-4 mt-14">
             {examStatus === 'started' && (
                 <div className="flex flex-col items-center">
                     <div className="fixed top-4 right-4 bg-white p-4 rounded shadow">

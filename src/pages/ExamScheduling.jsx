@@ -112,7 +112,7 @@ const ExamScheduling = () => {
     };
 
     return (
-        <div className="container mx-auto p-4">
+        <div className="container mx-auto mt-12 p-4">
             <ToastContainer />
             <h2 className="flex justify-center items-center text-xl text-blue-500 font-bold mb-4">Exam Management</h2>
             <form onSubmit={handleSubmit} className="mb-4 flex flex-col justify-center items-center space-y-4">

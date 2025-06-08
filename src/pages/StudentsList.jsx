@@ -52,7 +52,7 @@ const StudentsList = () => {
   };
 
   return (
-    <div className="p-4">
+    <div className="mt-14 p-4">
       <h1 className="flex justify-center items-center text-xl text-blue-500 font-bold mb-4">
         Students List
       </h1>

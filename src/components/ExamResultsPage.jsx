@@ -35,11 +35,11 @@ const ExamResultsPage = ({ recentSubmissions, isLoading }) => {
     );
 
     if (!validSubmissions.length) {
-        return <div className="text-center text-gray-500 py-12">No submissions found.</div>;
+        return <div className="text-center text-gray-500 py-12 ">No submissions found.</div>;
     }
 
     return (
-        <div className="container mx-auto p-6">
+        <div className="container mx-auto p-6 mt-12">
             {validSubmissions.map((submission, index) => {
                 const questions = submission.questions;
                 const correctAnswersCount = questions.filter(q => q.isCorrect).length;

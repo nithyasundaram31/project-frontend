@@ -42,12 +42,12 @@ const Login = () => {
     };
 
     return (
-        <div className='flex justify-center items-center flex-col sm:flex-col md:flex-row lg:flex-row bg-gray-100 min-h-screen'>
-            <div className='p-4'>
-                <h2 className="text-4xl font-bold text-blue-500">Online Assessment Platform</h2>
+        <div className='flex flex-col items-center justify-center min-h-screen bg-gradient-to-tr from-blue-300  to-pink-300 px-4 '>
+            <div className='p-4 '>
+                <h2 className="text-4xl sm:text-center  font-bold mb-16 text-indigo-800">Online Assessment Platform</h2>
             </div>
-            <form onSubmit={handleLogin} className='w-96 p-6 bg-white rounded'>
-                <h2 className='mb-8 text-4xl font-bold text-blue-500'>Login</h2>
+            <form onSubmit={handleLogin} className='w-96 p-6 border-1 bg-white bg-opacity-30 rounded'>
+                <h2 className='mb-8 text-4xl font-bold text-gray-800'>Login</h2>
                 <input
                     type="email"
                     placeholder='Email'
@@ -72,7 +72,7 @@ const Login = () => {
                 </button>
                 <div className='mt-4'>
                     <p>Don't have an account?
-                        <Link to="/register" className='ml-4 underline text-blue-500'>Register</Link>
+                        <Link to="/register" className='ml-4 underline font-bold text-indigo-800'>Register</Link>
                     </p>
                 </div>
             </form>

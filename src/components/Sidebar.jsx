@@ -15,9 +15,9 @@ const Sidebar = ({ isOpen }) => {
   const basePath = isAdmin ? "/admin/dashboard" : "/student/dashboard";
 
   return (
-    <aside className={`w-[15%] z-10 float-left ${isOpen ? 'block' : 'hidden'} lg:block`}>
+    <aside className={`w-[15%] z-10  p-14  ${isOpen ? 'block' : 'hidden'} lg:block`}>
       <div
-        className={`fixed left-0 h-full bg-gradient-to-r from-blue-500 to-purple-600 text-white transition-transform duration-300 ${
+        className={`fixed left-0 p-2 h-full bg-gradient-to-t from-green-500 to-indigo-600 text-white transition-transform duration-300 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } lg:translate-x-0`}
       >
@@ -33,7 +33,7 @@ const Sidebar = ({ isOpen }) => {
         <div className="flex flex-col h-full">
           <nav className="flex-1 p-4 space-y-4">
             <NavItem icon={<FaHome />} name="Dashboard" path={`${basePath}`} />
-            <NavItem icon={<FaUser />} name="Profile" path="/profile" />
+            <NavItem icon={<FaUser />} name="Profile" path={`${basePath}/profile`}/>
             {isAdmin ? (
               <>
                 <NavItem icon={<FaCalendarDay />} name="Exams" path={`${basePath}/exams`} />

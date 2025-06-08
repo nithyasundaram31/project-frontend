@@ -46,7 +46,7 @@ const StudentResult = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 mb-16">
+    <div className="container mx-auto p-6  mb-16">
       <h1 className="text-3xl font-bold mb-4 text-center">Results for {results?.user?.name}</h1>
 
       <div className="mb-6 p-4 border rounded-lg bg-gray-100 shadow-lg">
