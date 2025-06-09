@@ -35,7 +35,7 @@ const ExamResultsPage = ({ recentSubmissions, isLoading }) => {
     );
 
     if (!validSubmissions.length) {
-        return <div className="text-center text-gray-500 py-12 ">No submissions found.</div>;
+        return <div className="text-center text-gray-500 py-12 mt-8 ">No submissions found.</div>;
     }
 
     return (
