@@ -16,7 +16,8 @@ export const examReducer = (state = initialState, action) => {
                 ...state,
                 exams: action.payload.exams,
                 submittedData: action.payload.submittedData,
-                user: action.payload.user?.[0]
+                // user: action.payload.user?.[0]
+                 user: action.payload.user || null
             };
         case GET_EXAM_BY_ID:
             return { ...state, examDetails: action.payload }
