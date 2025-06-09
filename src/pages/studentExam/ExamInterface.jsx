@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import html2canvas from 'html2canvas';
@@ -27,9 +26,11 @@ const ExamInterface = () => {
     const [examStatus, setExamStatus] = useState('started');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [isSubmitting, setIsSubmitting] = useState(false); // New state to prevent double submission
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Initialize exam and verify requirements
+    // NEW state to track tab focus
+    const [tabFocused, setTabFocused] = useState(true);
+
     const initializeExam = useCallback(async () => {
         try {
             let duration = examData.duration;
@@ -39,7 +40,6 @@ const ExamInterface = () => {
                 navigator.mediaDevices.getUserMedia({ video: true }),
                 document.documentElement.requestFullscreen()
             ]);
-
         } catch (error) {
             console.error('Failed to initialize exam:', error);
         }
@@ -69,22 +69,21 @@ const ExamInterface = () => {
     }, [dispatch, fetchExams]);
 
     const submitExams = useCallback(async () => {
-        // Prevent double submission
         if (isSubmitting || examStatus === 'submitted') {
             return;
         }
 
         try {
-            setIsSubmitting(true); // Set submitting flag
-            
+            setIsSubmitting(true);
+
             const submitData = {
                 examId: id,
                 answers,
                 warningCount,
-            }
-            
+            };
+
             await dispatch(submitExam(submitData));
-            
+
             let activityData = {
                 activityType: "submitted exam",
                 examId: id,
@@ -92,18 +91,18 @@ const ExamInterface = () => {
                 name: user.name,
                 email: user.email,
                 userId: user.id
-            }
-            
+            };
+
             await dispatch(createStudentsActivity(activityData));
             setExamStatus('submitted');
-            
+
             if (document.fullscreenElement) {
                 document.exitFullscreen();
             }
-            
+
         } catch (error) {
             console.error('Failed to submit exam:', error);
-            setIsSubmitting(false); // Reset flag on error
+            setIsSubmitting(false);
         }
     }, [warningCount, id, examData, user, answers, dispatch, isSubmitting, examStatus]);
 
@@ -113,7 +112,6 @@ const ExamInterface = () => {
             const timer = setInterval(() => {
                 setTimeLeft(prev => {
                     if (prev <= 1) {
-                        // Time is up, submit exam
                         submitExams();
                         return 0;
                     }
@@ -133,19 +131,18 @@ const ExamInterface = () => {
                 exam: examData?.name || 'Unknown Exam',
                 name: user?.name || 'Unknown User',
                 email: user?.email || 'Unknown Email',
-                userId: user?.id || 'Unknown ID'
-            }
-            
-            // Try to create proctor data, but don't let it stop the warning system
+                userId: user?.id || 'Unknown ID',
+                tabFocused: tabFocused // Include tab focused info here
+            };
+
             try {
                 await dispatch(createProctor(proctorData));
             } catch (proctorError) {
                 console.error('Failed to save proctor data:', proctorError);
-                // Continue with warning system even if proctor data fails
             }
-            
+
             toast.warning(`Warning: ${type}`, { position: "top-right" });
-            
+
             setWarningCount(prevWarningCount => {
                 const newWarningCount = prevWarningCount + 1;
                 if (newWarningCount >= 3) {
@@ -157,7 +154,6 @@ const ExamInterface = () => {
 
         } catch (error) {
             console.error('Failed to handle suspicious activity:', error);
-            // Even if there's an error, still count the warning
             setWarningCount(prevWarningCount => {
                 const newWarningCount = prevWarningCount + 1;
                 if (newWarningCount >= 3) {
@@ -167,9 +163,9 @@ const ExamInterface = () => {
                 return newWarningCount;
             });
         }
-    }, [id, examData, user, dispatch, submitExams]);
+    }, [id, examData, user, dispatch, submitExams, tabFocused]);
 
-    // Monitor fullscreen
+    // Fullscreen monitoring
     useEffect(() => {
         const handleFullscreenChange = () => {
             if (!document.fullscreenElement && examStatus === 'started' && !isSubmitting) {
@@ -181,9 +177,10 @@ const ExamInterface = () => {
         return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
     }, [examStatus, handleSuspiciousActivity, isSubmitting]);
 
-    // Monitor tab visibility (Additional warning trigger)
+    // Visibility change monitoring - update tabFocused state
     useEffect(() => {
         const handleVisibilityChange = () => {
+            setTabFocused(!document.hidden);
             if (document.hidden && examStatus === 'started' && !isSubmitting) {
                 handleSuspiciousActivity("Switched to another tab/window");
             }
@@ -193,16 +190,23 @@ const ExamInterface = () => {
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
     }, [examStatus, handleSuspiciousActivity, isSubmitting]);
 
-    // Monitor focus events (Additional warning trigger)
+    // Window focus/blur monitoring - update tabFocused state
     useEffect(() => {
+        const handleFocus = () => setTabFocused(true);
         const handleBlur = () => {
+            setTabFocused(false);
             if (examStatus === 'started' && !isSubmitting) {
                 handleSuspiciousActivity("Lost window focus");
             }
         };
 
+        window.addEventListener('focus', handleFocus);
         window.addEventListener('blur', handleBlur);
-        return () => window.removeEventListener('blur', handleBlur);
+
+        return () => {
+            window.removeEventListener('focus', handleFocus);
+            window.removeEventListener('blur', handleBlur);
+        };
     }, [examStatus, handleSuspiciousActivity, isSubmitting]);
 
     const sendActivityData = useCallback(async (screenshot) => {
@@ -211,25 +215,24 @@ const ExamInterface = () => {
                 type: 'suspicious',
                 screenshot,
                 timestamp: new Date(),
-                tabFocused: document.hasFocus(),
+                tabFocused,
                 examId: id,
                 exam: examData?.name || 'Unknown Exam',
                 name: user?.name || 'Unknown User',
                 email: user?.email || 'Unknown Email',
                 userId: user?.id || 'Unknown ID'
-            }
-            
+            };
+
             try {
                 await dispatch(createProctor(proctorData));
             } catch (proctorError) {
                 console.error('Failed to save activity data:', proctorError);
-                // Don't show error to user for background monitoring
             }
-            
+
         } catch (error) {
             console.error('Failed to send activity data:', error);
         }
-    }, [id, dispatch, examData, user]);
+    }, [id, dispatch, examData, user, tabFocused]);
 
     // Periodic screenshot and activity monitoring
     useEffect(() => {
@@ -320,7 +323,7 @@ const ExamInterface = () => {
 
                     <div className="max-w-3xl mx-auto mt-20 bg-white p-6 rounded shadow">
                         <h1 className="text-2xl font-bold mb-6">{examData.name}</h1>
-                        
+
                         {questions.map((question, index) => (
                             <div key={question.id} className="mb-8">
                                 <p className="font-semibold mb-4">
@@ -377,8 +380,8 @@ const ExamInterface = () => {
                             onClick={submitExams}
                             disabled={isSubmitting}
                             className={`px-8 py-3 rounded mb-8 text-white ${
-                                isSubmitting 
-                                    ? 'bg-gray-400 cursor-not-allowed' 
+                                isSubmitting
+                                    ? 'bg-gray-400 cursor-not-allowed'
                                     : 'bg-green-600 hover:bg-green-700'
                             }`}
                         >
