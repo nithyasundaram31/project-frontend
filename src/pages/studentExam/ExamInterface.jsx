@@ -15,7 +15,7 @@ const ExamInterface = () => {
     const navigate = useNavigate();
     const hasFetchedExams = useRef(false);
 
-    const { id } = useParams(); // Get the exam ID from the URL
+    const { id } = useParams();
     const { examDetails } = useSelector(state => state.exams);
     const { examData, questions } = examDetails;
     const { user } = useSelector((state) => state.auth);
@@ -24,59 +24,67 @@ const ExamInterface = () => {
     const [timeLeft, setTimeLeft] = useState(null);
     const webcamRef = useRef(null);
     const [warningCount, setWarningCount] = useState(0);
-    const [examStatus, setExamStatus] = useState('started'); // waiting, started, submitted
+    const [examStatus, setExamStatus] = useState('started');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false); // New state to prevent double submission
 
     // Initialize exam and verify requirements
     const initializeExam = useCallback(async () => {
         try {
             let duration = examData.duration;
-            setTimeLeft(duration * 60); // Convert minutes to seconds
+            setTimeLeft(duration * 60);
 
-            // Request necessary permissions
             await Promise.all([
                 navigator.mediaDevices.getUserMedia({ video: true }),
                 document.documentElement.requestFullscreen()
             ]);
 
         } catch (error) {
-            // setError(error);
-            console.error('Failed to fetch exams:', error);
+            console.error('Failed to initialize exam:', error);
         }
     }, [examData]);
 
     const fetchExams = useCallback(async () => {
         try {
-            setLoading(true);  // Set loading true when fetching starts
-            await dispatch(getExamById(id)); // Fetch exam by ID
-            await initializeExam();          // Initialize exam
+            setLoading(true);
+            await dispatch(getExamById(id));
+            await initializeExam();
         } catch (error) {
             setError(error);
             console.error('Failed to fetch exams:', error);
         } finally {
-            setLoading(false);  // Set loading to false once fetch is complete
+            setLoading(false);
         }
     }, [dispatch, id, initializeExam]);
 
     useEffect(() => {
         const fetchData = async () => {
             if (!hasFetchedExams.current) {
-                await fetchExams();  // Fetch exams only on initial mount
-                hasFetchedExams.current = true; // Mark as fetched
+                await fetchExams();
+                hasFetchedExams.current = true;
             }
         };
-        fetchData();  // Call the async fetch function
+        fetchData();
     }, [dispatch, fetchExams]);
 
     const submitExams = useCallback(async () => {
+        // Prevent double submission
+        if (isSubmitting || examStatus === 'submitted') {
+            return;
+        }
+
         try {
+            setIsSubmitting(true); // Set submitting flag
+            
             const submitData = {
                 examId: id,
                 answers,
                 warningCount,
             }
+            
             await dispatch(submitExam(submitData));
+            
             let activityData = {
                 activityType: "submitted exam",
                 examId: id,
@@ -85,25 +93,36 @@ const ExamInterface = () => {
                 email: user.email,
                 userId: user.id
             }
+            
             await dispatch(createStudentsActivity(activityData));
             setExamStatus('submitted');
-            document.exitFullscreen();
+            
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            }
+            
         } catch (error) {
             console.error('Failed to submit exam:', error);
+            setIsSubmitting(false); // Reset flag on error
         }
-    }, [warningCount, id, examData, user, answers, dispatch]);
+    }, [warningCount, id, examData, user, answers, dispatch, isSubmitting, examStatus]);
 
     // Timer countdown
     useEffect(() => {
-        if (examStatus === 'started' && timeLeft > 0) {
+        if (examStatus === 'started' && timeLeft > 0 && !isSubmitting) {
             const timer = setInterval(() => {
-                setTimeLeft(prev => prev - 1);
+                setTimeLeft(prev => {
+                    if (prev <= 1) {
+                        // Time is up, submit exam
+                        submitExams();
+                        return 0;
+                    }
+                    return prev - 1;
+                });
             }, 1000);
             return () => clearInterval(timer);
-        } else if (timeLeft === 0) {
-            submitExams();
         }
-    }, [timeLeft, examStatus, submitExams]);
+    }, [timeLeft, examStatus, submitExams, isSubmitting]);
 
     const handleSuspiciousActivity = useCallback(async (type) => {
         try {
@@ -111,37 +130,80 @@ const ExamInterface = () => {
                 type: type,
                 timestamp: new Date(),
                 examId: id,
-                exam: examData.name,
-                name: user.name,
-                email: user.email,
-                userId: user.id
+                exam: examData?.name || 'Unknown Exam',
+                name: user?.name || 'Unknown User',
+                email: user?.email || 'Unknown Email',
+                userId: user?.id || 'Unknown ID'
             }
-            await dispatch(createProctor(proctorData))
-            toast.success(type);
-            await setWarningCount(prevWarningCount => {
+            
+            // Try to create proctor data, but don't let it stop the warning system
+            try {
+                await dispatch(createProctor(proctorData));
+            } catch (proctorError) {
+                console.error('Failed to save proctor data:', proctorError);
+                // Continue with warning system even if proctor data fails
+            }
+            
+            toast.warning(`Warning: ${type}`, { position: "top-right" });
+            
+            setWarningCount(prevWarningCount => {
                 const newWarningCount = prevWarningCount + 1;
                 if (newWarningCount >= 3) {
-                    submitExams();
+                    toast.error("Maximum warnings reached. Submitting exam automatically.");
+                    setTimeout(() => submitExams(), 1000);
                 }
                 return newWarningCount;
             });
 
         } catch (error) {
-            console.error('Failed to report suspicious activity:', error);
+            console.error('Failed to handle suspicious activity:', error);
+            // Even if there's an error, still count the warning
+            setWarningCount(prevWarningCount => {
+                const newWarningCount = prevWarningCount + 1;
+                if (newWarningCount >= 3) {
+                    toast.error("Maximum warnings reached. Submitting exam automatically.");
+                    setTimeout(() => submitExams(), 1000);
+                }
+                return newWarningCount;
+            });
         }
     }, [id, examData, user, dispatch, submitExams]);
 
     // Monitor fullscreen
     useEffect(() => {
         const handleFullscreenChange = () => {
-            if (!document.fullscreenElement && examStatus === 'started') {
-                handleSuspiciousActivity("Left fullscreen mode");  // Call suspicious activity handler if fullscreen is exited
+            if (!document.fullscreenElement && examStatus === 'started' && !isSubmitting) {
+                handleSuspiciousActivity("Left fullscreen mode");
             }
         };
 
         document.addEventListener('fullscreenchange', handleFullscreenChange);
         return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    }, [examStatus, handleSuspiciousActivity]);
+    }, [examStatus, handleSuspiciousActivity, isSubmitting]);
+
+    // Monitor tab visibility (Additional warning trigger)
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.hidden && examStatus === 'started' && !isSubmitting) {
+                handleSuspiciousActivity("Switched to another tab/window");
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }, [examStatus, handleSuspiciousActivity, isSubmitting]);
+
+    // Monitor focus events (Additional warning trigger)
+    useEffect(() => {
+        const handleBlur = () => {
+            if (examStatus === 'started' && !isSubmitting) {
+                handleSuspiciousActivity("Lost window focus");
+            }
+        };
+
+        window.addEventListener('blur', handleBlur);
+        return () => window.removeEventListener('blur', handleBlur);
+    }, [examStatus, handleSuspiciousActivity, isSubmitting]);
 
     const sendActivityData = useCallback(async (screenshot) => {
         try {
@@ -151,12 +213,19 @@ const ExamInterface = () => {
                 timestamp: new Date(),
                 tabFocused: document.hasFocus(),
                 examId: id,
-                exam: examData.name,
-                name: user.name,
-                email: user.email,
-                userId: user.id
+                exam: examData?.name || 'Unknown Exam',
+                name: user?.name || 'Unknown User',
+                email: user?.email || 'Unknown Email',
+                userId: user?.id || 'Unknown ID'
             }
-            await dispatch(createProctor(proctorData))
+            
+            try {
+                await dispatch(createProctor(proctorData));
+            } catch (proctorError) {
+                console.error('Failed to save activity data:', proctorError);
+                // Don't show error to user for background monitoring
+            }
+            
         } catch (error) {
             console.error('Failed to send activity data:', error);
         }
@@ -164,35 +233,27 @@ const ExamInterface = () => {
 
     // Periodic screenshot and activity monitoring
     useEffect(() => {
-        if (examStatus === 'started') {
+        if (examStatus === 'started' && !isSubmitting) {
             const monitoring = setInterval(async () => {
-                // Capture the full window screenshot using html2canvas
                 const fullWindowScreenshot = await html2canvas(document.body)
-                    .then(canvas => canvas.toDataURL("image/png")) // Convert the canvas to a data URL (image)
+                    .then(canvas => canvas.toDataURL("image/png"))
                     .catch(error => console.error("Error capturing screenshot:", error));
 
                 if (fullWindowScreenshot) {
-                    // Send the captured screenshot to the server
                     sendActivityData(fullWindowScreenshot);
                 }
-            }, 30000); // Every 30 seconds
+            }, 30000);
 
             return () => clearInterval(monitoring);
         }
-    }, [examStatus, sendActivityData]);
+    }, [examStatus, sendActivityData, isSubmitting]);
 
-
-    //handle all answers from student
     const handleAnswerChange = (questionId, answer, questionType) => {
         setAnswers(prev => {
             const updatedAnswers = { ...prev, [questionId]: answer };
-            // Clear the answer for the other question type (either "multiple-choice" or "true-false")
             for (let key in prev) {
                 if (key !== questionId && (questionType === 'multiple-choice' || questionType === 'true-false')) {
-                    // Assuming questions are grouped in a way where you can identify if the question type is "true-false" or "multiple-choice"
                     const otherQuestion = questions.find(q => q._id === key);
-
-                    // If another question type is different from the current one, clear its answer
                     if (otherQuestion?.questionType && otherQuestion.questionType !== questionType) {
                         updatedAnswers[key] = '';
                     }
@@ -203,7 +264,7 @@ const ExamInterface = () => {
     };
 
     const existFullscreen = useCallback(() => {
-        if (document.fullscreenElement) { // Check if the document is in fullscreen mode
+        if (document.fullscreenElement) {
             document.exitFullscreen()
                 .then(() => {
                     console.log("Exited fullscreen mode successfully.");
@@ -214,11 +275,10 @@ const ExamInterface = () => {
             navigate(-1);
         } else {
             console.log("Not in fullscreen mode.");
-            navigate(-1); // Navigate back
+            navigate(-1);
         }
     }, [navigate]);
 
-    // Show error message if there was a problem fetching the data
     if (error) {
         return (
             <div className="p-6 text-center">
@@ -237,10 +297,10 @@ const ExamInterface = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 p-4 mt-14">
+        <div className="min-h-screen bg-gray-50 p-4 mt-10">
             {examStatus === 'started' && (
                 <div className="flex flex-col items-center">
-                    <div className="fixed top-4 right-4 bg-white p-4 rounded shadow">
+                    <div className="fixed top-14 right-4 bg-white p-4 rounded shadow">
                         <div className="text-xl font-bold">
                             Time Left: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
                         </div>
@@ -250,18 +310,17 @@ const ExamInterface = () => {
                     </div>
 
                     <div className="fixed top-4 left-4 w-48 opacity-0 pointer-events-none z-50">
-    <Webcam
-        ref={webcamRef}
-        audio={false}
-        screenshotFormat="image/jpeg"
-        className="w-full rounded"
-    />
-</div>
-
+                        <Webcam
+                            ref={webcamRef}
+                            audio={false}
+                            screenshotFormat="image/jpeg"
+                            className="w-full rounded"
+                        />
+                    </div>
 
                     <div className="max-w-3xl mx-auto mt-20 bg-white p-6 rounded shadow">
                         <h1 className="text-2xl font-bold mb-6">{examData.name}</h1>
-                        {/* questions list */}
+                        
                         {questions.map((question, index) => (
                             <div key={question.id} className="mb-8">
                                 <p className="font-semibold mb-4">
@@ -316,9 +375,14 @@ const ExamInterface = () => {
 
                         <button
                             onClick={submitExams}
-                            className="bg-green-600 text-white px-8 py-3 rounded hover:bg-green-700 mb-8"
+                            disabled={isSubmitting}
+                            className={`px-8 py-3 rounded mb-8 text-white ${
+                                isSubmitting 
+                                    ? 'bg-gray-400 cursor-not-allowed' 
+                                    : 'bg-green-600 hover:bg-green-700'
+                            }`}
                         >
-                            Submit Exam
+                            {isSubmitting ? 'Submitting...' : 'Submit Exam'}
                         </button>
                     </div>
                 </div>

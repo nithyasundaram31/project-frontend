@@ -77,7 +77,7 @@ const ExamDetails = () => {
     // If no examDetails are found after fetching
     if (!examDetails || !examDetails.examData ) {
         return (
-            <div className="p-6 text-center">
+            <div className="p-6  mt-8 text-center">
                 <h1 className="text-2xl font-bold text-red-600">Exam Not Found</h1>
                 <p>The requested exam does not exist or has been removed.</p>
                 <GoBackButton />
@@ -86,7 +86,7 @@ const ExamDetails = () => {
     }
 
     return (
-        <div className="p-6 pb-16 max-w-4xl mx-auto">
+        <div className="p-6 mt-8 pb-16 max-w-4xl mx-auto">
             <h1 className="text-3xl font-bold text-blue-500 mb-4">{examDetails?.examData?.name} Assessment</h1>
             <p className="text-lg text-gray-700 mb-6">{examDetails?.examData?.description}</p>
             <hr />
