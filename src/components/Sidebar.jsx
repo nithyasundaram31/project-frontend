@@ -17,11 +17,11 @@ const Sidebar = ({ isOpen }) => {
   return (
     <aside className={`w-[15%] z-10  p-14  ${isOpen ? 'block' : 'hidden'} lg:block`}>
       <div
-        className={`fixed left-0 p-2 h-full bg-gradient-to-t from-green-500 to-indigo-600 text-white transition-transform duration-300 ${
+        className={`fixed left-0 p-1 h-full bg-gradient-to-t from-green-500 to-indigo-600 text-white transition-transform duration-300 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } lg:translate-x-0`}
       >
-        <div className="flex flex-col items-center justify-center py-4">
+        <div className="flex flex-col items-center justify-center  py-4">
           {isAuthenticated && user && user.role ? (
             <>
               <FaUserCircle size={64} />

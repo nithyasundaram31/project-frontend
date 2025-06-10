@@ -136,12 +136,13 @@ const ExamTable = ({ exams, isLoading, onEdit, onDelete, onView }) => {
                                         <td className="px-4 py-2 border text-center">
                                             {new Date(exam.date).toLocaleDateString()}
                                         </td>
-                                        <td className="px-4 py-2 border text-center">{exam.duration}</td>
+                                        <td className="px-2 py-2 border text-center">{exam.duration}</td>
                                         <td className="px-4 py-2 border text-center">{exam.totalMarks}</td>
                                         <td className="px-4 py-2 border text-center">{exam.totalQuestions}</td>
                                         <td className="px-4 py-2 border text-center">{exam.description}</td>
                                         <td className={`px-4 py-2 border text-center ${colorClass}`}>{status}</td>
                                         <td className="px-4 py-2 border text-center">
+                                            <div className="flex">
                                             <button onClick={() => onView(exam._id)} className="text-blue-500 hover:text-blue-700 mr-3" aria-label="View">
                                                 <FaEye />
                                             </button>
@@ -151,6 +152,7 @@ const ExamTable = ({ exams, isLoading, onEdit, onDelete, onView }) => {
                                             <button onClick={() => onDelete(exam._id)} className="text-red-500 hover:text-red-700" aria-label="Delete">
                                                 <FaTrash />
                                             </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 );

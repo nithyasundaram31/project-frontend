@@ -80,6 +80,7 @@ const ExamInterface = () => {
                 examId: id,
                 answers,
                 warningCount,
+                userId: user?.id || user?._id
             };
 
             await dispatch(submitExam(submitData));
