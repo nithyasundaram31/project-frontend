@@ -8,10 +8,11 @@ export const register = (userData) => async (dispatch) => {
     dispatch({ type: 'REGISTER_SUCCESS', payload: response.data });
     return response.data;
   } catch (error) {
-    toast.error(error?.response?.data?.error || 'Registration failed');
+    toast.error(error?.response?.data?.message || 'Registration failed');
     dispatch({ type: 'REGISTER_FAIL', payload: error?.response?.data });
   }
 };
+
 
 export const login = (userData) => async (dispatch) => {
   try {
