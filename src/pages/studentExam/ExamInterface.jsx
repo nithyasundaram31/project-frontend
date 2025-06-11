@@ -467,6 +467,7 @@ const ExamInterface = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const hasFetchedExams = useRef(false);
+    const isSubmittingRef = useRef(false);
 
     const { id } = useParams();
     const { examDetails } = useSelector(state => state.exams);
@@ -480,17 +481,17 @@ const ExamInterface = () => {
     const [examStatus, setExamStatus] = useState('started');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [tabFocused, setTabFocused] = useState(true);
+    const [monitoringPaused, setMonitoringPaused] = useState(false);
 
     const initializeExam = useCallback(async () => {
         try {
+            setMonitoringPaused(true);
             let duration = examData.duration;
             setTimeLeft(duration * 60);
-            await Promise.all([
-                navigator.mediaDevices.getUserMedia({ video: true }),
-                document.documentElement.requestFullscreen()
-            ]);
+            await navigator.mediaDevices.getUserMedia({ video: true });
+            await document.documentElement.requestFullscreen();
+            setMonitoringPaused(false);
         } catch (error) {
             console.error('Failed to initialize exam:', error);
         }
@@ -520,9 +521,8 @@ const ExamInterface = () => {
     }, [dispatch, fetchExams]);
 
     const submitExams = useCallback(async () => {
-        if (isSubmitting || examStatus === 'submitted') return;
-        setIsSubmitting(true);
-
+        if (isSubmittingRef.current || examStatus === 'submitted') return;
+        isSubmittingRef.current = true;
         try {
             const submitData = {
                 examId: id,
@@ -530,9 +530,7 @@ const ExamInterface = () => {
                 warningCount,
                 userId: user?.id || user?._id
             };
-
             await dispatch(submitExam(submitData));
-
             const activityData = {
                 activityType: "submitted exam",
                 examId: id,
@@ -541,20 +539,18 @@ const ExamInterface = () => {
                 email: user.email,
                 userId: user.id
             };
-
             await dispatch(createStudentsActivity(activityData));
             setExamStatus('submitted');
-
             if (document.fullscreenElement) {
                 document.exitFullscreen();
             }
         } catch (error) {
             console.error('Failed to submit exam:', error);
         }
-    }, [warningCount, id, examData, user, answers, dispatch, isSubmitting, examStatus]);
+    }, [warningCount, id, examData, user, answers, dispatch, examStatus]);
 
     useEffect(() => {
-        if (examStatus === 'started' && timeLeft > 0 && !isSubmitting) {
+        if (examStatus === 'started' && timeLeft > 0 && !isSubmittingRef.current) {
             const timer = setInterval(() => {
                 setTimeLeft(prev => {
                     if (prev <= 1) {
@@ -566,7 +562,7 @@ const ExamInterface = () => {
             }, 1000);
             return () => clearInterval(timer);
         }
-    }, [timeLeft, examStatus, submitExams, isSubmitting]);
+    }, [timeLeft, examStatus, submitExams]);
 
     const handleSuspiciousActivity = useCallback(async (type) => {
         try {
@@ -578,65 +574,50 @@ const ExamInterface = () => {
                 userId: user?.id || 'Unknown ID',
                 tabFocused
             };
-
             await dispatch(createProctor(proctorData));
             toast.warning(`Warning: ${type}`, { position: "top-right" });
-
             setWarningCount(prev => {
                 const newCount = prev + 1;
                 if (newCount >= 3) {
                     toast.error("Maximum warnings reached. Submitting exam automatically.");
-                    if (!isSubmitting) {
-                        setIsSubmitting(true);
+                    if (!isSubmittingRef.current) {
+                        isSubmittingRef.current = true;
                         setTimeout(() => submitExams(), 1000);
                     }
                 }
                 return newCount;
             });
-
         } catch (error) {
             console.error('Failed to handle suspicious activity:', error);
-            setWarningCount(prev => {
-                const newCount = prev + 1;
-                if (newCount >= 3) {
-                    toast.error("Maximum warnings reached. Submitting exam automatically.");
-                    if (!isSubmitting) {
-                        setIsSubmitting(true);
-                        setTimeout(() => submitExams(), 1000);
-                    }
-                }
-                return newCount;
-            });
         }
-    }, [id, examData, user, dispatch, submitExams, tabFocused, isSubmitting]);
+    }, [id, examData, user, dispatch, submitExams, tabFocused]);
 
-    // Monitoring effects (fullscreen, visibility, focus/blur)
     useEffect(() => {
         const handleFullscreenChange = () => {
-            if (!document.fullscreenElement && examStatus === 'started' && !isSubmitting) {
+            if (!monitoringPaused && !document.fullscreenElement && examStatus === 'started' && !isSubmittingRef.current) {
                 handleSuspiciousActivity("Left fullscreen mode");
             }
         };
         document.addEventListener('fullscreenchange', handleFullscreenChange);
         return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    }, [examStatus, handleSuspiciousActivity, isSubmitting]);
+    }, [examStatus, handleSuspiciousActivity, monitoringPaused]);
 
     useEffect(() => {
         const handleVisibilityChange = () => {
             setTabFocused(!document.hidden);
-            if (document.hidden && examStatus === 'started' && !isSubmitting) {
+            if (!monitoringPaused && document.hidden && examStatus === 'started' && !isSubmittingRef.current) {
                 handleSuspiciousActivity("Switched to another tab/window");
             }
         };
         document.addEventListener('visibilitychange', handleVisibilityChange);
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-    }, [examStatus, handleSuspiciousActivity, isSubmitting]);
+    }, [examStatus, handleSuspiciousActivity, monitoringPaused]);
 
     useEffect(() => {
         const handleFocus = () => setTabFocused(true);
         const handleBlur = () => {
             setTabFocused(false);
-            if (examStatus === 'started' && !isSubmitting) {
+            if (!monitoringPaused && examStatus === 'started' && !isSubmittingRef.current) {
                 handleSuspiciousActivity("Lost window focus");
             }
         };
@@ -646,7 +627,7 @@ const ExamInterface = () => {
             window.removeEventListener('focus', handleFocus);
             window.removeEventListener('blur', handleBlur);
         };
-    }, [examStatus, handleSuspiciousActivity, isSubmitting]);
+    }, [examStatus, handleSuspiciousActivity, monitoringPaused]);
 
     const sendActivityData = useCallback(async (screenshot) => {
         try {
@@ -663,7 +644,7 @@ const ExamInterface = () => {
     }, [id, dispatch, examData, user, tabFocused]);
 
     useEffect(() => {
-        if (examStatus === 'started' && !isSubmitting) {
+        if (examStatus === 'started' && !isSubmittingRef.current) {
             const monitoring = setInterval(async () => {
                 const fullWindowScreenshot = await html2canvas(document.body)
                     .then(canvas => canvas.toDataURL("image/png"))
@@ -674,9 +655,9 @@ const ExamInterface = () => {
             }, 30000);
             return () => clearInterval(monitoring);
         }
-    }, [examStatus, sendActivityData, isSubmitting]);
+    }, [examStatus, sendActivityData]);
 
-    const handleAnswerChange = (questionId, answer, questionType) => {
+    const handleAnswerChange = (questionId, answer) => {
         const stringId = questionId.toString(); 
         setAnswers(prev => ({ ...prev, [stringId]: answer }));
     };
@@ -735,7 +716,7 @@ const ExamInterface = () => {
                                                     type="radio"
                                                     name={`question-${question.id}`}
                                                     value={option}
-                                                    onChange={(e) => handleAnswerChange(question.id, e.target.value, "multiple-choice")}
+                                                    onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                                                     checked={answers[question.id] === option}
                                                     className="form-radio"
                                                 />
@@ -751,7 +732,7 @@ const ExamInterface = () => {
                                                     type="radio"
                                                     name={`question-${question.id}`}
                                                     value={option}
-                                                    onChange={(e) => handleAnswerChange(question.id, e.target.value, "true-false")}
+                                                    onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                                                     checked={answers[question.id] === option}
                                                     className="form-radio"
                                                 />
@@ -770,9 +751,9 @@ const ExamInterface = () => {
                                 )}
                             </div>
                         ))}
-                        <button onClick={submitExams} disabled={isSubmitting}
-                            className={`px-8 py-3 rounded mb-8 text-white ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}>
-                            {isSubmitting ? 'Submitting...' : 'Submit Exam'}
+                        <button onClick={submitExams} disabled={isSubmittingRef.current}
+                            className={`px-8 py-3 rounded mb-8 text-white ${isSubmittingRef.current ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}>
+                            {isSubmittingRef.current ? 'Submitting...' : 'Submit Exam'}
                         </button>
                     </div>
                 </div>
