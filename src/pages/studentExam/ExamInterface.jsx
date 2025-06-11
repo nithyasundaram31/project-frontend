@@ -452,6 +452,11 @@
 // };
 
 // export default ExamInterface;
+
+
+
+
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import html2canvas from 'html2canvas';
@@ -483,19 +488,26 @@ const ExamInterface = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [tabFocused, setTabFocused] = useState(true);
 
+    // NEW FOR FIX
+    const [monitoringStarted, setMonitoringStarted] = useState(false);
+
+    // Initialize exam (camera permission + fullscreen)
     const initializeExam = useCallback(async () => {
         try {
             let duration = examData.duration;
             setTimeLeft(duration * 60);
-            await Promise.all([
-                navigator.mediaDevices.getUserMedia({ video: true }),
-                document.documentElement.requestFullscreen()
-            ]);
+            // Camera permission first
+            await navigator.mediaDevices.getUserMedia({ video: true });
+            // Then fullscreen
+            await document.documentElement.requestFullscreen();
+            // Only after both done, start monitoring
+            setMonitoringStarted(true);
         } catch (error) {
             console.error('Failed to initialize exam:', error);
         }
     }, [examData]);
 
+    // Fetch exam data and initialize
     const fetchExams = useCallback(async () => {
         try {
             setLoading(true);
@@ -519,6 +531,7 @@ const ExamInterface = () => {
         fetchData();
     }, [dispatch, fetchExams]);
 
+    // SUBMIT LOGIC
     const submitExams = useCallback(async () => {
         if (isSubmitting || examStatus === 'submitted') return;
         setIsSubmitting(true);
@@ -553,8 +566,9 @@ const ExamInterface = () => {
         }
     }, [warningCount, id, examData, user, answers, dispatch, isSubmitting, examStatus]);
 
+    // TIMER
     useEffect(() => {
-        if (examStatus === 'started' && timeLeft > 0 && !isSubmitting) {
+        if (examStatus === 'started' && timeLeft > 0 && !isSubmitting && monitoringStarted) {
             const timer = setInterval(() => {
                 setTimeLeft(prev => {
                     if (prev <= 1) {
@@ -566,9 +580,11 @@ const ExamInterface = () => {
             }, 1000);
             return () => clearInterval(timer);
         }
-    }, [timeLeft, examStatus, submitExams, isSubmitting]);
+    }, [timeLeft, examStatus, submitExams, isSubmitting, monitoringStarted]);
 
+    // SUSPICIOUS ACTIVITY HANDLER (GUARDED BY monitoringStarted)
     const handleSuspiciousActivity = useCallback(async (type) => {
+        if (!monitoringStarted) return;
         try {
             const proctorData = {
                 type, timestamp: new Date(), examId: id,
@@ -608,10 +624,11 @@ const ExamInterface = () => {
                 return newCount;
             });
         }
-    }, [id, examData, user, dispatch, submitExams, tabFocused, isSubmitting]);
+    }, [id, examData, user, dispatch, submitExams, tabFocused, isSubmitting, monitoringStarted]);
 
-    // Monitoring effects (fullscreen, visibility, focus/blur)
+    // MONITORING EFFECTS - All GUARD with monitoringStarted
     useEffect(() => {
+        if (!(examStatus === 'started' && monitoringStarted && !isSubmitting)) return;
         const handleFullscreenChange = () => {
             if (!document.fullscreenElement && examStatus === 'started' && !isSubmitting) {
                 handleSuspiciousActivity("Left fullscreen mode");
@@ -619,9 +636,10 @@ const ExamInterface = () => {
         };
         document.addEventListener('fullscreenchange', handleFullscreenChange);
         return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    }, [examStatus, handleSuspiciousActivity, isSubmitting]);
+    }, [examStatus, handleSuspiciousActivity, isSubmitting, monitoringStarted]);
 
     useEffect(() => {
+        if (!(examStatus === 'started' && monitoringStarted && !isSubmitting)) return;
         const handleVisibilityChange = () => {
             setTabFocused(!document.hidden);
             if (document.hidden && examStatus === 'started' && !isSubmitting) {
@@ -630,9 +648,10 @@ const ExamInterface = () => {
         };
         document.addEventListener('visibilitychange', handleVisibilityChange);
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-    }, [examStatus, handleSuspiciousActivity, isSubmitting]);
+    }, [examStatus, handleSuspiciousActivity, isSubmitting, monitoringStarted]);
 
     useEffect(() => {
+        if (!(examStatus === 'started' && monitoringStarted && !isSubmitting)) return;
         const handleFocus = () => setTabFocused(true);
         const handleBlur = () => {
             setTabFocused(false);
@@ -646,9 +665,11 @@ const ExamInterface = () => {
             window.removeEventListener('focus', handleFocus);
             window.removeEventListener('blur', handleBlur);
         };
-    }, [examStatus, handleSuspiciousActivity, isSubmitting]);
+    }, [examStatus, handleSuspiciousActivity, isSubmitting, monitoringStarted]);
 
+    // Periodic screenshot and activity monitoring
     const sendActivityData = useCallback(async (screenshot) => {
+        if (!monitoringStarted) return;
         try {
             const proctorData = {
                 type: 'suspicious', screenshot, timestamp: new Date(),
@@ -660,27 +681,28 @@ const ExamInterface = () => {
         } catch (error) {
             console.error('Failed to send activity data:', error);
         }
-    }, [id, dispatch, examData, user, tabFocused]);
+    }, [id, dispatch, examData, user, tabFocused, monitoringStarted]);
 
     useEffect(() => {
-        if (examStatus === 'started' && !isSubmitting) {
-            const monitoring = setInterval(async () => {
-                const fullWindowScreenshot = await html2canvas(document.body)
-                    .then(canvas => canvas.toDataURL("image/png"))
-                    .catch(error => console.error("Error capturing screenshot:", error));
-                if (fullWindowScreenshot) {
-                    sendActivityData(fullWindowScreenshot);
-                }
-            }, 30000);
-            return () => clearInterval(monitoring);
-        }
-    }, [examStatus, sendActivityData, isSubmitting]);
+        if (!(examStatus === 'started' && monitoringStarted && !isSubmitting)) return;
+        const monitoring = setInterval(async () => {
+            const fullWindowScreenshot = await html2canvas(document.body)
+                .then(canvas => canvas.toDataURL("image/png"))
+                .catch(error => console.error("Error capturing screenshot:", error));
+            if (fullWindowScreenshot) {
+                sendActivityData(fullWindowScreenshot);
+            }
+        }, 30000);
+        return () => clearInterval(monitoring);
+    }, [examStatus, sendActivityData, isSubmitting, monitoringStarted]);
 
+    // ANSWER HANDLER
     const handleAnswerChange = (questionId, answer, questionType) => {
-        const stringId = questionId.toString(); 
+        const stringId = questionId.toString();
         setAnswers(prev => ({ ...prev, [stringId]: answer }));
     };
 
+    // EXIT FULLSCREEN
     const existFullscreen = useCallback(() => {
         if (document.fullscreenElement) {
             document.exitFullscreen().catch((err) => console.error("Error exiting fullscreen:", err));
