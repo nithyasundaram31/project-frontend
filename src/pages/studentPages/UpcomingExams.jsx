@@ -1,6 +1,5 @@
 
 
-
 import React, { useEffect, useRef, useState } from 'react';
 import {
   FaCalendarAlt, FaClock, FaBookOpen, FaSpinner, FaQuestionCircle, FaPencilAlt, FaUserLock
@@ -20,7 +19,6 @@ const UpcomingExams = () => {
   const { user } = useSelector((state) => state.auth);
 
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
   const hasFetchedExams = useRef(false);
 
   useEffect(() => {
@@ -60,13 +58,7 @@ const UpcomingExams = () => {
           <h1 className="text-2xl font-bold text-blue-500">Exams</h1>
           <p className="text-gray-600">Keep track of your scheduled examinations</p>
         </div>
-        <div className="mb-4">
-          <input type="text" placeholder="Search exams..." value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full max-w-xs p-2 border border-blue-500 rounded-md" />
-        </div>
       </div>
-      <hr />
 
       {isLoading ? (
         <div className="flex justify-center items-center py-12">
@@ -82,10 +74,15 @@ const UpcomingExams = () => {
               </div>
             ) : (
               <>
+
+
+              {/*  new notice box */}
                 <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-4 rounded">
-                  <h3 className="font-semibold mb-2 text-black">Notice:</h3>
+                  <h3 className="font-semibold mb-2 text-black"> Important Notice:</h3>
                   <ul className="list-disc list-inside text-sm text-gray-700 space-y-2">
-                    <li>This exam will be available only for 24 hours after start date.</li>
+                    <li>This exam will be available only for 24 hours after it becomes active.</li>
+                    <li>Please make sure to attend and submit your exam before deadline.</li>
+                    <li>After 24 hours, exam will be automatically closed .</li>
                   </ul>
                 </div>
 
@@ -94,10 +91,10 @@ const UpcomingExams = () => {
                     const examDate = new Date(exam.date);
                     const expireDate = new Date(examDate.getTime() + 24 * 60 * 60 * 1000);
                     const now = new Date();
+
                     const isExpired = now > expireDate;
                     const isToday = examDate.toDateString() === today.toDateString();
                     const isFuture = examDate > today;
-
                     const userSubmission = submittedData?.find(sub => sub.examId._id === exam._id);
 
                     return (
@@ -141,6 +138,7 @@ const UpcomingExams = () => {
             <div className="bg-red-50 p-6 rounded-lg shadow-sm flex flex-col items-center justify-center">
               <FaUserLock className="h-12 w-12 text-red-400 mb-4" />
               <p className="text-lg font-medium text-red-600">Exam Access Denied</p>
+                <p className="text-sm text-red-500">You do not have permission to take exams at this time. Please contact the admin.</p>
             </div>
           )}
         </>
@@ -150,4 +148,3 @@ const UpcomingExams = () => {
 };
 
 export default UpcomingExams;
-
