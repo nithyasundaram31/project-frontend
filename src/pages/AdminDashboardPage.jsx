@@ -36,14 +36,14 @@ const AdminDashboardPage = () => {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
 
-  // Active Exam Logic 
+  // Active Exam
   const activeExams = exams?.filter(exam => {
     const examDate = new Date(exam.date);
     const expireDate = new Date(examDate.getTime() + 24 * 60 * 60 * 1000);
     return examDate.toDateString() === now.toDateString() && now <= expireDate;
   }) || [];
 
-  // Upcoming Exam Logic  (Corrected)
+  // Upcoming Exam 
   const upcomingExams = exams?.filter(exam => {
     const examDate = new Date(exam.date);
     const expireDate = new Date(examDate.getTime() + 24 * 60 * 60 * 1000);
