@@ -1,204 +1,15 @@
-// import React, { useEffect, useRef, useState } from 'react';
-// import {
-//   FaCalendarAlt,
-//   FaClock,
-//   FaBookOpen,
-//   FaSpinner,
-//   FaQuestionCircle,
-//   FaPencilAlt,
-//   FaUserLock,
-// } from 'react-icons/fa';
-// import { useDispatch, useSelector } from 'react-redux';
-// import { getExams } from '../../redux/actions/examActions';
-// import { getSubmitted } from '../../redux/actions/submitExam';
-// import { formatDateToInput } from '../../utils/dateUtils';
-// import { useNavigate } from 'react-router-dom';
-
-// const UpcomingExams = () => {
-//   const dispatch = useDispatch();
-//   const navigate = useNavigate();
-
-//   const { exams } = useSelector((state) => state.exams);
-//   const { submittedData } = useSelector((state) => state.examSubmit);
-//   const { user } = useSelector((state) => state.auth);
-
-//   const [isLoading, setIsLoading] = useState(true);
-//   const [searchQuery, setSearchQuery] = useState('');
-//   const hasFetchedExams = useRef(false);
-
-//   useEffect(() => {
-//     const fetchExams = async () => {
-//       setIsLoading(true);
-//       try {
-//         await dispatch(getSubmitted());
-//         await dispatch(getExams());
-//       } finally {
-//         setIsLoading(false);
-//       }
-//     };
-
-//     if (!hasFetchedExams.current) {
-//       fetchExams();
-//       hasFetchedExams.current = true;
-//     }
-//   }, [dispatch]);
-
-//   const handleView = (id) => {
-//     navigate(`/student/dashboard/exam-details/${id}`);
-//   };
-
-//   const todayDate = formatDateToInput(new Date());
-
-//   const upcomingExams = exams
-//     .filter((exam) => {
-//       const examDate = formatDateToInput(new Date(exam.date));
-//       const matchesDate = examDate >= todayDate;
-//       const matchesSearch = exam.name.toLowerCase().includes(searchQuery.toLowerCase());
-//       return matchesDate && matchesSearch;
-//     })
-//     .sort((a, b) => new Date(a.date) - new Date(b.date));
-
-//   return (
-//     <div className="p-4 max-w-7xl mt-16 mx-auto">
-//       <div className="mb-6 flex justify-between items-center">
-//         <div>
-//           <h1 className="text-2xl font-bold text-blue-500">Exams</h1>
-//           <p className="text-gray-600">Keep track of your scheduled examinations</p>
-//         </div>
-//         <div className="mb-4">
-//           <input
-//             type="text"
-//             placeholder="Search exams..."
-//             value={searchQuery}
-//             onChange={(e) => setSearchQuery(e.target.value)}
-//             className="w-full max-w-xs p-2 border border-blue-500 rounded-md"
-//           />
-//         </div>
-//       </div>
-//       <hr />
-
-//       {isLoading ? (
-//         <div className="flex justify-center items-center py-12">
-//           <FaSpinner className="animate-spin h-12 w-12 text-gray-500" />
-//         </div>
-//       ) : (
-//         <>
-//           {user?.role === 'student' && user?.examPermission !== true ? (
-//             upcomingExams.length === 0 ? (
-//               <div className="bg-gray-50 p-6 rounded-lg shadow-sm flex flex-col items-center justify-center">
-//                 <FaBookOpen className="h-12 w-12 text-gray-400 mb-4" />
-//                 <p className="text-lg font-medium text-gray-600">No upcoming exams</p>
-//                 <p className="text-sm text-gray-500">
-//                   When exams are scheduled, they will appear here
-//                 </p>
-//               </div>
-//             ) : (
-//               <>
-//                 {/* HINT MESSAGE */}
-//                <div className="bg-yellow-100 border-l-4 border-yellow-500  p-4 mb-4 rounded">
-//   <h3 className="font-semibold mb-2  text-black">Notice:</h3>
-//   <ul className="list-disc list-inside text-sm text-gray-700 space-y-2">
-//     <li>This exam will be available only for 24 hours from the time of creation.</li>
-//     <li>After 24 hours, the exam will be automatically closed.</li>
-//     <li>Make sure you complete and submit within this time.</li>
-//   </ul>
-// </div>
 
 
-//                 {/* EXAM GRID */}
-//                 <div className="grid grid-cols-1 mt-4 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-16">
-//                   {upcomingExams.map((exam, index) => {
-//                     const examDate = formatDateToInput(new Date(exam.date));
-//                     const userSubmission = submittedData?.find(
-//                       (sub) => sub.examId._id === exam._id
-//                     );
-
-//                     return (
-//                       <div
-//                         key={index}
-//                         className="bg-white border border-gray-500 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
-//                       >
-//                         <h2 className="text-xl font-semibold text-gray-900">{exam.name}</h2>
-//                         <div className="grid gap-3 mt-4">
-//                           <div className="flex items-center gap-2">
-//                             <FaCalendarAlt className="h-4 w-4 text-gray-500" />
-//                             <span className="text-gray-600">{examDate}</span>
-//                           </div>
-//                           <div className="flex items-center gap-2">
-//                             <FaClock className="h-4 w-4 text-gray-500" />
-//                             <span className="text-gray-600">{exam.duration} mins</span>
-//                           </div>
-//                           <div className="flex items-center gap-2">
-//                             <FaQuestionCircle className="h-4 w-4 text-gray-500" />
-//                             <span className="text-gray-600">{exam.totalQuestions} Questions</span>
-//                           </div>
-//                           <div className="flex items-center gap-2">
-//                             <FaPencilAlt className="h-4 w-4 text-gray-500" />
-//                             <span className="text-gray-600">{exam.totalMarks} Marks</span>
-//                           </div>
-//                           {exam.description && (
-//                             <p className="mt-2 text-sm text-gray-600 truncate max-w-xs">
-//                               {exam.description}
-//                             </p>
-//                           )}
-//                         </div>
-
-//                         <div className="mt-6 text-center">
-//                           <button
-//                             className={`px-4 py-2 ${
-//                               userSubmission
-//                                 ? 'bg-gray-400 cursor-not-allowed'
-//                                 : 'bg-gradient-to-r from-blue-500 to-pink-500 text-white font-semibold'
-//                             } rounded-md transition`}
-//                             onClick={() => (userSubmission ? null : handleView(exam._id))}
-//                             disabled={!!userSubmission}
-//                           >
-//                             {userSubmission
-//                               ? 'Exam Submitted'
-//                               : examDate === todayDate
-//                               ? 'Take Exam'
-//                               : 'Wait for the day'}
-//                           </button>
-//                         </div>
-//                       </div>
-//                     );
-//                   })}
-//                 </div>
-//               </>
-//             )
-//           ) : (
-//             <div className="bg-red-50 p-6 rounded-lg shadow-sm flex flex-col items-center justify-center">
-//               <FaUserLock className="h-12 w-12 text-red-400 mb-4" />
-//               <p className="text-lg font-medium text-red-600">Exam Access Denied</p>
-//               <p className="text-sm text-red-500">
-//                 You do not have permission to take exams at this time. Please contact the admin.
-//               </p>
-//             </div>
-//           )}
-//         </>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default UpcomingExams;
 
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  FaCalendarAlt,
-  FaClock,
-  FaBookOpen,
-  FaSpinner,
-  FaQuestionCircle,
-  FaPencilAlt,
-  FaUserLock,
+  FaCalendarAlt, FaClock, FaBookOpen, FaSpinner, FaQuestionCircle, FaPencilAlt, FaUserLock
 } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import { getExams } from '../../redux/actions/examActions';
 import { getSubmitted } from '../../redux/actions/submitExam';
 import { formatDateToInput } from '../../utils/dateUtils';
 import { useNavigate } from 'react-router-dom';
-import { parseISO, isSameDay, isAfter, isBefore } from 'date-fns';
 
 const UpcomingExams = () => {
   const dispatch = useDispatch();
@@ -233,16 +44,14 @@ const UpcomingExams = () => {
     navigate(`/student/dashboard/exam-details/${id}`);
   };
 
-  const todayObj = new Date();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-  const upcomingExams = exams
-    .filter((exam) => {
-      const examDateObj = parseISO(exam.date);
-      const matchesDate = isSameDay(examDateObj, todayObj) || isAfter(examDateObj, todayObj);
-      const matchesSearch = exam.name.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesDate && matchesSearch;
-    })
-    .sort((a, b) => new Date(a.date) - new Date(b.date));
+  const filteredExams = exams?.filter((exam) => {
+    const examDate = new Date(exam.date);
+    const expireDate = new Date(examDate.getTime() + 24 * 60 * 60 * 1000);
+    return today <= expireDate;
+  }).sort((a, b) => new Date(a.date) - new Date(b.date));
 
   return (
     <div className="p-4 max-w-7xl mt-16 mx-auto">
@@ -252,13 +61,9 @@ const UpcomingExams = () => {
           <p className="text-gray-600">Keep track of your scheduled examinations</p>
         </div>
         <div className="mb-4">
-          <input
-            type="text"
-            placeholder="Search exams..."
-            value={searchQuery}
+          <input type="text" placeholder="Search exams..." value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full max-w-xs p-2 border border-blue-500 rounded-md"
-          />
+            className="w-full max-w-xs p-2 border border-blue-500 rounded-md" />
         </div>
       </div>
       <hr />
@@ -270,44 +75,38 @@ const UpcomingExams = () => {
       ) : (
         <>
           {user?.role === 'student' && user?.examPermission !== true ? (
-            upcomingExams.length === 0 ? (
+            filteredExams.length === 0 ? (
               <div className="bg-gray-50 p-6 rounded-lg shadow-sm flex flex-col items-center justify-center">
                 <FaBookOpen className="h-12 w-12 text-gray-400 mb-4" />
                 <p className="text-lg font-medium text-gray-600">No upcoming exams</p>
-                <p className="text-sm text-gray-500">
-                  When exams are scheduled, they will appear here
-                </p>
               </div>
             ) : (
               <>
                 <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-4 rounded">
                   <h3 className="font-semibold mb-2 text-black">Notice:</h3>
                   <ul className="list-disc list-inside text-sm text-gray-700 space-y-2">
-                    <li>This exam will be available only for 24 hours from the time of creation.</li>
-                    <li>After 24 hours, the exam will be automatically closed.</li>
-                    <li>Make sure you complete and submit within this time.</li>
+                    <li>This exam will be available only for 24 hours after start date.</li>
                   </ul>
                 </div>
 
                 <div className="grid grid-cols-1 mt-4 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-16">
-                  {upcomingExams.map((exam, index) => {
-                    const examDateObj = parseISO(exam.date);
-                    const isToday = isSameDay(examDateObj, todayObj);
-                    const isFuture = isAfter(examDateObj, todayObj);
-                    const userSubmission = submittedData?.find(
-                      (sub) => sub.examId._id === exam._id
-                    );
+                  {filteredExams.map((exam, index) => {
+                    const examDate = new Date(exam.date);
+                    const expireDate = new Date(examDate.getTime() + 24 * 60 * 60 * 1000);
+                    const now = new Date();
+                    const isExpired = now > expireDate;
+                    const isToday = examDate.toDateString() === today.toDateString();
+                    const isFuture = examDate > today;
+
+                    const userSubmission = submittedData?.find(sub => sub.examId._id === exam._id);
 
                     return (
-                      <div
-                        key={index}
-                        className="bg-white border border-gray-500 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
-                      >
+                      <div key={index} className="bg-white border border-gray-500 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
                         <h2 className="text-xl font-semibold text-gray-900">{exam.name}</h2>
                         <div className="grid gap-3 mt-4">
                           <div className="flex items-center gap-2">
                             <FaCalendarAlt className="h-4 w-4 text-gray-500" />
-                            <span className="text-gray-600">{formatDateToInput(examDateObj)}</span>
+                            <span className="text-gray-600">{formatDateToInput(examDate)}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <FaClock className="h-4 w-4 text-gray-500" />
@@ -321,30 +120,15 @@ const UpcomingExams = () => {
                             <FaPencilAlt className="h-4 w-4 text-gray-500" />
                             <span className="text-gray-600">{exam.totalMarks} Marks</span>
                           </div>
-                          {exam.description && (
-                            <p className="mt-2 text-sm text-gray-600 truncate max-w-xs">
-                              {exam.description}
-                            </p>
-                          )}
                         </div>
 
                         <div className="mt-6 text-center">
                           <button
-                            className={`px-4 py-2 ${
-                              userSubmission
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : isToday
-                                ? 'bg-gradient-to-r from-blue-500 to-pink-500 text-white font-semibold'
-                                : 'bg-gray-400 text-black cursor-not-allowed'
-                            } rounded-md transition`}
-                            onClick={() => (userSubmission || !isToday ? null : handleView(exam._id))}
-                            disabled={!!userSubmission || !isToday}
+                            className={`px-4 py-2 ${userSubmission || isExpired ? 'bg-gray-400 cursor-not-allowed' : isToday ? 'bg-gradient-to-r from-blue-500 to-pink-500 text-white font-semibold' : 'bg-gray-400 text-black cursor-not-allowed'} rounded-md transition`}
+                            onClick={() => (!userSubmission && !isExpired && isToday ? handleView(exam._id) : null)}
+                            disabled={userSubmission || isExpired || (!isToday && isFuture)}
                           >
-                            {userSubmission
-                              ? 'Exam Submitted'
-                              : isToday
-                              ? 'Take Exam'
-                              : 'Wait for the day'}
+                            {userSubmission ? 'Exam Submitted' : isExpired ? 'Exam Ended' : isToday ? 'Take Exam' : 'Wait for the day'}
                           </button>
                         </div>
                       </div>
@@ -357,9 +141,6 @@ const UpcomingExams = () => {
             <div className="bg-red-50 p-6 rounded-lg shadow-sm flex flex-col items-center justify-center">
               <FaUserLock className="h-12 w-12 text-red-400 mb-4" />
               <p className="text-lg font-medium text-red-600">Exam Access Denied</p>
-              <p className="text-sm text-red-500">
-                You do not have permission to take exams at this time. Please contact the admin.
-              </p>
             </div>
           )}
         </>
@@ -369,3 +150,4 @@ const UpcomingExams = () => {
 };
 
 export default UpcomingExams;
+
