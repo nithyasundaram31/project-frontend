@@ -2,7 +2,7 @@ import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
 
 const RecentActivity = ({ activities }) => {
-  console.log("🔍 Received activities:", activities); // Debug
+  console.log("Received activities:", activities); 
 
   if (!Array.isArray(activities)) {
     return <p className="text-red-500">Invalid activity data.</p>;

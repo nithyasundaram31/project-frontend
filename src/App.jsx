@@ -49,7 +49,7 @@ function App() {
       {/* <Route path="/terms" element={<TermsOfService />} /> */}
       <Route path="/students" element={<StudentsList />} />
 
-      {/* Top-level /profile route accessible only if authenticated */}
+      
       <Route
         path="/profile"
         element={

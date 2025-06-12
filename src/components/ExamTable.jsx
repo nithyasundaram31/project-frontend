@@ -1,12 +1,10 @@
-
-
 import { FaEdit, FaTrash, FaSpinner, FaEye } from "react-icons/fa";
 
 const ExamTable = ({ exams, isLoading, onEdit, onDelete, onView }) => {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
 
-  // 💡 Full correct status logic
+  
   const getExamStatus = (examDate) => {
     const examDateObj = new Date(examDate);
     const expireDate = new Date(examDateObj.getTime() + 24 * 60 * 60 * 1000);

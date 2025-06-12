@@ -1,24 +1,9 @@
 import React from 'react';
-import {
-    Chart as ChartJS,
-    ArcElement,
-    BarElement,
-    CategoryScale,
-    LinearScale,
-    Tooltip,
-    Legend
-} from 'chart.js';
+import { Chart as ChartJS, ArcElement, BarElement, CategoryScale,LinearScale,Tooltip, Legend} from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 import { FaSpinner } from 'react-icons/fa';
 
-ChartJS.register(
-    ArcElement,
-    BarElement,
-    CategoryScale,
-    LinearScale,
-    Tooltip,
-    Legend
-);
+ChartJS.register( ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 const ExamResultsPage = ({ recentSubmissions, isLoading }) => {
     if (isLoading) {

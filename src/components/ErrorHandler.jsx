@@ -12,9 +12,8 @@ const ErrorHandler = ({ error }) => {
             // Server error
             navigate('/error'); // Navigate to the ErrorPage
         } else {
-            // Handle other errors (e.g., validation errors)
+           
             // Show error message or log it as needed
-            // You could show a toast or inline error here if you wish
             console.error(error.response.data?.message || "An error occurred");
         }
     }, [error, navigate]);
