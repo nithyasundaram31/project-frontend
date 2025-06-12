@@ -9,17 +9,7 @@ const handleError = (error, dispatch, type) => {
     toast.error(error?.response?.data?.message || 'Something went wrong');
 };
 
-// export const submitExam = (examData) => async (dispatch) => {
-//     try {
-//         console.log('Submitting Exam Data:', examData);
-//         const { data } = await instance.post('/api/exam/submit', examData);
-//         toast.success(data?.message || 'Submitted successfully');
-//         dispatch({ type: 'EXAM_SUBMIT_SUCCESS', payload: data });
-//         // dispatch(getSubmitted()); // Uncomment if needed
-//     } catch (error) {
-//         handleError(error, dispatch, 'EXAM_SUBMIT_FAIL');
-//     }
-// };
+
 export const submitExam = (examData) => async (dispatch) => {
     try {
         
@@ -28,9 +18,6 @@ export const submitExam = (examData) => async (dispatch) => {
 
         toast.success(data?.message || 'Submitted successfully');
         dispatch({ type: 'EXAM_SUBMIT_SUCCESS', payload: data });
-
-        //  Only call getSubmitted after success
-        // dispatch(getSubmitted());
 
         return data;
 
