@@ -362,7 +362,7 @@ const ExamInterface = () => {
         try {
             await dispatch(createProctor({
                 type, timestamp: new Date(), examId: id, exam: examData?.name,
-                name: user?.name, email: user?.email, userId: user?.id
+                name: user?.name, email: user?.email, userId: user?.id ,tabFocused:false
             }));
         } catch (err) {
             console.error('Proctor saving failed:', err);
