@@ -2,8 +2,8 @@ import axios from 'axios';
 
 // Centralized axios instance
 const instance = axios.create({
-   baseURL: import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:5000" // .env file-ல் set  backend url
-  // withCredentials: true, // cookies/JWT use பண்ணினால் மட்டும்
+   baseURL: import.meta.env.VITE_BACKEND_URL || "https://project-backend-om0o.onrender.com" 
+  // withCredentials: true, // cookies/JWT use
 });
 
 // Add token automatically to all requests
