@@ -69,6 +69,7 @@ const UpcomingExams = () => {
               <div className="bg-gray-50 p-6 rounded-lg shadow-sm flex flex-col items-center justify-center">
                 <FaBookOpen className="h-12 w-12 text-gray-400 mb-4" />
                 <p className="text-lg font-medium text-gray-600">No upcoming exams</p>
+                  <p className="text-sm text-gray-500">When exams are scheduled, they will appear here</p>
               </div>
             ) : (
               <>

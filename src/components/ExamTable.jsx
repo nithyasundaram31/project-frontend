@@ -4,7 +4,6 @@ const ExamTable = ({ exams, isLoading, onEdit, onDelete, onView }) => {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
 
-  
   const getExamStatus = (examDate) => {
     const examDateObj = new Date(examDate);
     const expireDate = new Date(examDateObj.getTime() + 24 * 60 * 60 * 1000);
@@ -12,7 +11,7 @@ const ExamTable = ({ exams, isLoading, onEdit, onDelete, onView }) => {
     if (now > expireDate) return { status: 'Expired', colorClass: 'text-gray-500' };
     if (examDateObj.toDateString() === now.toDateString()) return { status: 'Active', colorClass: 'text-green-500' };
     if (examDateObj > now) return { status: 'Upcoming', colorClass: 'text-blue-500' };
-    return { status: 'Completed', colorClass: 'text-red-500' }; // fallback
+    return { status: 'Completed', colorClass: 'text-red-500' };
   };
 
   return (
@@ -39,30 +38,38 @@ const ExamTable = ({ exams, isLoading, onEdit, onDelete, onView }) => {
               </tr>
             </thead>
             <tbody>
-              {exams?.map((exam, index) => {
-                const { status, colorClass } = getExamStatus(exam.date);
-                return (
-                  <tr key={exam._id}>
-                    <td className="px-4 py-2 border text-center">{index + 1}</td>
-                    <td className="px-4 py-2 border text-center">{exam.name}</td>
-                    <td className="px-4 py-2 border text-center">
-                      {new Date(exam.date).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-2 border text-center">{exam.duration}</td>
-                    <td className="px-4 py-2 border text-center">{exam.totalMarks}</td>
-                    <td className="px-4 py-2 border text-center">{exam.totalQuestions}</td>
-                    <td className="px-4 py-2 border text-center">{exam.description}</td>
-                    <td className={`px-4 py-2 border text-center ${colorClass}`}>{status}</td>
-                    <td className="px-4 py-2 border text-center">
-                      <div className="flex justify-center">
-                        <button onClick={() => onView(exam._id)} className="text-blue-500 hover:text-blue-700 mr-3"><FaEye /></button>
-                        <button onClick={() => onEdit(exam._id)} className="text-blue-500 hover:text-blue-700 mr-3"><FaEdit /></button>
-                        <button onClick={() => onDelete(exam._id)} className="text-red-500 hover:text-red-700"><FaTrash /></button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+              {exams && exams.length > 0 ? (
+                exams.map((exam, index) => {
+                  const { status, colorClass } = getExamStatus(exam.date);
+                  return (
+                    <tr key={exam._id}>
+                      <td className="px-4 py-2 border text-center">{index + 1}</td>
+                      <td className="px-4 py-2 border text-center">{exam.name}</td>
+                      <td className="px-4 py-2 border text-center">
+                        {new Date(exam.date).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-2 border text-center">{exam.duration}</td>
+                      <td className="px-4 py-2 border text-center">{exam.totalMarks}</td>
+                      <td className="px-4 py-2 border text-center">{exam.totalQuestions}</td>
+                      <td className="px-4 py-2 border text-center">{exam.description}</td>
+                      <td className={`px-4 py-2 border text-center ${colorClass}`}>{status}</td>
+                      <td className="px-4 py-2 border text-center">
+                        <div className="flex justify-center">
+                          <button onClick={() => onView(exam._id)} className="text-blue-500 hover:text-blue-700 mr-3"><FaEye /></button>
+                          <button onClick={() => onEdit(exam._id)} className="text-blue-500 hover:text-blue-700 mr-3"><FaEdit /></button>
+                          <button onClick={() => onDelete(exam._id)} className="text-red-500 hover:text-red-700"><FaTrash /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan="9" className="px-4 py-6 border text-center text-gray-500">
+                    No exams found
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -72,6 +79,4 @@ const ExamTable = ({ exams, isLoading, onEdit, onDelete, onView }) => {
 };
 
 export default ExamTable;
-
-
 

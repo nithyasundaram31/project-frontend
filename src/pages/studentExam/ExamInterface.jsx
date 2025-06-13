@@ -62,14 +62,14 @@ const ExamInterface = () => {
         }
     }, [fetchExams]);
 
-    const submitExams = useCallback(async () => {
+    const submitExams = useCallback(async (currentWarningCount = warningCount) => {
         if (isSubmitting || examStatus === 'submitted') return;
         setIsSubmitting(true);
         try {
             const submitData = {
                 examId: id,
                 answers,
-                warningCount,
+                warningCount: currentWarningCount,
                 userId: user?.id || user?._id
             };
             await dispatch(submitExam(submitData));
@@ -107,14 +107,13 @@ const ExamInterface = () => {
     }, [timeLeft, examStatus, submitExams, isSubmitting]);
 
     const handleSuspiciousActivity = useCallback(async (type) => {
-        if (initializing) return;
-        if (warningLockRef.current) return;
+        if (initializing || warningLockRef.current) return;
         warningLockRef.current = true;
 
         try {
             await dispatch(createProctor({
                 type, timestamp: new Date(), examId: id, exam: examData?.name,
-                name: user?.name, email: user?.email, userId: user?.id ,tabFocused:false
+                name: user?.name, email: user?.email, userId: user?.id, tabFocused: false
             }));
         } catch (err) {
             console.error('Proctor saving failed:', err);
@@ -126,7 +125,7 @@ const ExamInterface = () => {
             const newCount = prev + 1;
             if (newCount >= 3) {
                 toast.error("Maximum warnings reached. Submitting exam...");
-                setTimeout(() => submitExams(), 1000);
+                setTimeout(() => submitExams(newCount), 1000);
             }
             return newCount;
         });
@@ -137,7 +136,7 @@ const ExamInterface = () => {
     useEffect(() => {
         const fullscreenHandler = () => {
             if (!document.fullscreenElement && examStatus === 'started' && !isSubmitting) {
-                handleSuspiciousActivity("Left fullscreen mode");
+                handleSuspiciousActivity("Left Fullscreen Mode");
             }
         };
         document.addEventListener('fullscreenchange', fullscreenHandler);
@@ -147,7 +146,7 @@ const ExamInterface = () => {
     useEffect(() => {
         const visibilityHandler = () => {
             if (document.hidden && examStatus === 'started' && !isSubmitting) {
-                handleSuspiciousActivity("Switched to another tab");
+                handleSuspiciousActivity("Switched Tab");
             }
         };
         document.addEventListener('visibilitychange', visibilityHandler);
@@ -157,7 +156,7 @@ const ExamInterface = () => {
     useEffect(() => {
         const blurHandler = () => {
             if (examStatus === 'started' && !isSubmitting) {
-                handleSuspiciousActivity("Lost window focus");
+                handleSuspiciousActivity("Lost Window Focus");
             }
         };
         window.addEventListener('blur', blurHandler);
@@ -268,4 +267,7 @@ const ExamInterface = () => {
 };
 
 export default ExamInterface;
+
+
+
 
