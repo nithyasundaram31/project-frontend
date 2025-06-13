@@ -33,9 +33,10 @@ const Login = () => {
                         navigate('/'); // fallback
                     }
                 }, 1000);
-            } else {
-                toast.error("Invalid credentials. Please try again.");
             }
+            //  else {
+            //     toast.error("Invalid credentials. Please try again.");
+            // }
         } catch (error) {
             toast.error("Login failed, please try again.");
         }
