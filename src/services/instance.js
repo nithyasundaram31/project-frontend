@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Centralized axios instance
 const instance = axios.create({
-   baseURL: import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:5000" 
+   baseURL: import.meta.env.VITE_BACKEND_URL || "https://project-backend-om0o.onrender.com" 
   // withCredentials: true, // cookies/JWT use
 });
 
