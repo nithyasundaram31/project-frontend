@@ -57,6 +57,7 @@ const NavItem = ({ icon, name, path }) => {
   return (
     <NavLink
       to={path}
+      end
       className={({ isActive }) =>
         `group flex items-center space-x-4 p-2 rounded cursor-pointer ${
           isActive ? 'bg-indigo-700 text-white' : 'hover:bg-black text-gray-200'
