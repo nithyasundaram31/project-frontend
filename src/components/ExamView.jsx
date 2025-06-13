@@ -65,7 +65,7 @@ const ExamView = () => {
         <div className="container mx-auto p-4">
             {/* Exam Details */}
             <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-                <h2 className="text-2xl font-semibold mt-10 mb-2">
+                <h2 className="text-2xl font-semibold mt-8 mb-2">
                     Exam: {examDetails?.examData?.name || 'N/A'}
                 </h2>
                 <p className="text-gray-600 mb-2">
