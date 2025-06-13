@@ -120,7 +120,7 @@ const UpcomingExams = () => {
 
                         <div className="mt-6 text-center">
                           <button
-                            className={`px-4 py-2 ${userSubmission || isExpired ? 'bg-gray-400 cursor-not-allowed' : isToday ? 'bg-gradient-to-r from-blue-500 to-pink-500 text-white font-semibold' : 'bg-gray-400 text-black cursor-not-allowed'} rounded-md transition`}
+                            className={`px-4 py-2 ${userSubmission || isExpired ? 'bg-gray-400 cursor-not-allowed' : isToday ? 'bg-blue-600 text-white font-semibold' : 'bg-gray-400 text-black cursor-not-allowed'} rounded-md transition`}
                             onClick={() => (!userSubmission && !isExpired && isToday ? handleView(exam._id) : null)}
                             disabled={userSubmission || isExpired || (!isToday && isFuture)}
                           >
