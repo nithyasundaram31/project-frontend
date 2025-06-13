@@ -243,7 +243,7 @@ const ExamInterface = () => {
                         ))}
 
                         <button
-                            onClick={() => submitExams()}  // ✅ ✅ ✅ Change made here
+                            onClick={() => submitExams()}  
                             disabled={isSubmitting}
                             className={`px-8 py-3 rounded mb-8 text-white ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}
                         >
