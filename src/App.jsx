@@ -5,6 +5,8 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import Register from './components/Register';
 import Login from './components/Login';
+import AdminLogin from './pages/AdminLogin';  
+
 import StudentDashboard from './pages/studentPages/StudentDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import ProfileUpdate from './pages/ProfilePage';
@@ -44,6 +46,7 @@ function App() {
       {/* Public routes */}
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
+       <Route path="/admin/login" element={<AdminLogin />} />
       {/* <Route path="/about" element={<About />} /> */}
       {/* <Route path="/privacy" element={<PrivacyPolicy />} /> */}
       {/* <Route path="/terms" element={<TermsOfService />} /> */}
