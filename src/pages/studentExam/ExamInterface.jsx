@@ -350,7 +350,6 @@ const ExamInterface = () => {
                     </div>
                 </div>
             )}
-
             {examStatus === 'submitted' && (
                 <div className="flex flex-col items-center justify-center min-h-screen">
                     <div className="text-center mb-6 bg-white p-8 rounded-lg shadow-lg">
@@ -364,5 +363,5 @@ const ExamInterface = () => {
         </div>
     );
 };
+export default ExamInterface;  
 
-export default ExamInterface;
