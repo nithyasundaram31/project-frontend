@@ -31,7 +31,7 @@ function App() {
 
   return (
     <Routes>
-      {/* Root route redirects to dashboard based on role or login page */}
+     
       <Route
         path="/"
         element={
@@ -102,7 +102,7 @@ function App() {
       {/* Error route */}
       <Route path="/error" element={<ErrorPage />} />
 
-      {/* Catch all unmatched routes and redirect or show error */}
+      {/* all unmatched routes and redirect or show error */}
       <Route path="*" element={<Navigate to="/error" />} />
     </Routes>
   );
