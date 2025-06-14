@@ -10,24 +10,48 @@ import { createProctor, createStudentsActivity } from '../../redux/actions/stude
 const ExamInterface = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const hasFetchedExams = useRef(false);
-
     const { id } = useParams();
+
     const { examDetails } = useSelector(state => state.exams);
-    const { examData, questions } = examDetails;
+    const { examData, questions, isSubmitted } = examDetails || {};
     const { user } = useSelector((state) => state.auth);
 
     const [answers, setAnswers] = useState({});
     const [timeLeft, setTimeLeft] = useState(null);
     const [warningCount, setWarningCount] = useState(0);
-    const [examStatus, setExamStatus] = useState('started');
+    const [examStatus, setExamStatus] = useState('loading');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [initializing, setInitializing] = useState(true);
     const warningLockRef = useRef(false);
+    const examInitializedRef = useRef(false);
+    const submitLockRef = useRef(false);
+
+    // Block browser back button when exam is active
+    useEffect(() => {
+        const handlePopState = (event) => {
+            if (examStatus === 'started' && !isSubmitting) {
+                event.preventDefault();
+                window.history.pushState(null, '', window.location.pathname);
+                toast.warning('Cannot go back during exam!');
+                return false;
+            }
+        };
+
+        if (examStatus === 'started') {
+            window.history.pushState(null, '', window.location.pathname);
+            window.addEventListener('popstate', handlePopState);
+        }
+
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+        };
+    }, [examStatus, isSubmitting]);
 
     const initializeExam = useCallback(async () => {
+        if (examInitializedRef.current) return;
+
         try {
             let duration = examData.duration;
             setTimeLeft(duration * 60);
@@ -37,34 +61,67 @@ const ExamInterface = () => {
                 document.documentElement.requestFullscreen()
             ]);
             setInitializing(false);
+            setExamStatus('started');
+            examInitializedRef.current = true;
         } catch (error) {
             console.error('Failed to initialize exam:', error);
+            setError('Failed to initialize exam. Please ensure camera access and try again.');
         }
     }, [examData]);
 
-    const fetchExams = useCallback(async () => {
-        try {
-            setLoading(true);
-            await dispatch(getExamById(id));
-            await initializeExam();
-        } catch (error) {
-            setError(error);
-            console.error('Failed to fetch exams:', error);
-        } finally {
-            setLoading(false);
+    // Load exam data
+    useEffect(() => {
+        const loadExam = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                await dispatch(getExamById(id));
+            } catch (error) {
+                setError('Failed to load exam');
+                console.error('Error loading exam:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (id) {
+            loadExam();
         }
-    }, [dispatch, id, initializeExam]);
+    }, [dispatch, id]);
+
 
     useEffect(() => {
-        if (!hasFetchedExams.current) {
-            fetchExams();
-            hasFetchedExams.current = true;
-        }
-    }, [fetchExams]);
+        const checkExamStatus = async () => {
+            if (!examData || loading) return;
+
+            // Check if exam is already submitted
+            if (isSubmitted) {
+                setExamStatus('submitted');
+
+                setTimeout(() => {
+                    navigate('/student/dashboard/exams', { replace: true });
+                }, 2000);
+                return;
+            }
+
+
+            if (examStatus === 'loading' && !examInitializedRef.current) {
+                await initializeExam();
+            }
+        };
+
+        checkExamStatus();
+    }, [examData, isSubmitted, examStatus, loading, initializeExam, navigate]);
 
     const submitExams = useCallback(async (currentWarningCount = warningCount) => {
-        if (isSubmitting || examStatus === 'submitted') return;
+        // check with ref to prevent  conditions
+        if (submitLockRef.current || isSubmitting || examStatus === 'submitted') return;
+
+        // Lock immediately to prevent duplicate calls
+        submitLockRef.current = true;
+        setExamStatus('submitted');
         setIsSubmitting(true);
+
         try {
             const submitData = {
                 examId: id,
@@ -72,6 +129,7 @@ const ExamInterface = () => {
                 warningCount: currentWarningCount,
                 userId: user?.id || user?._id
             };
+
             await dispatch(submitExam(submitData));
             await dispatch(createStudentsActivity({
                 activityType: "submitted exam",
@@ -81,15 +139,29 @@ const ExamInterface = () => {
                 email: user.email,
                 userId: user.id
             }));
-            setExamStatus('submitted');
+
+            // Exit fullscreen
             if (document.fullscreenElement) {
                 document.exitFullscreen();
             }
+
+            // Clear answers from state
+            setAnswers({});
+
+            // Redirect after 3 seconds with replace to prevent back navigation
+            setTimeout(() => {
+                navigate('/student/dashboard/exams', { replace: true });
+            }, 3000);
+
         } catch (error) {
             console.error('Failed to submit exam:', error);
+            toast.error('Failed to submit exam. Please try again.');
+            // Reset status only on error
+            setExamStatus('started');
             setIsSubmitting(false);
+            submitLockRef.current = false;
         }
-    }, [warningCount, id, examData, user, answers, dispatch, isSubmitting, examStatus]);
+    }, [warningCount, id, examData, user, answers, dispatch, isSubmitting, examStatus, navigate]);
 
     useEffect(() => {
         if (examStatus === 'started' && timeLeft > 0 && !isSubmitting) {
@@ -107,13 +179,19 @@ const ExamInterface = () => {
     }, [timeLeft, examStatus, submitExams, isSubmitting]);
 
     const handleSuspiciousActivity = useCallback(async (type) => {
-        if (initializing || warningLockRef.current) return;
+        if (initializing || warningLockRef.current || examStatus !== 'started') return;
         warningLockRef.current = true;
 
         try {
             await dispatch(createProctor({
-                type, timestamp: new Date(), examId: id, exam: examData?.name,
-                name: user?.name, email: user?.email, userId: user?.id, tabFocused: false
+                type,
+                timestamp: new Date(),
+                examId: id,
+                exam: examData?.name,
+                name: user?.name,
+                email: user?.email,
+                userId: user?.id,
+                tabFocused: false
             }));
         } catch (err) {
             console.error('Proctor saving failed:', err);
@@ -131,7 +209,7 @@ const ExamInterface = () => {
         });
 
         setTimeout(() => { warningLockRef.current = false; }, 1500);
-    }, [id, examData, user, dispatch, submitExams, initializing]);
+    }, [id, examData, user, dispatch, submitExams, initializing, examStatus]);
 
     useEffect(() => {
         const fullscreenHandler = () => {
@@ -167,20 +245,37 @@ const ExamInterface = () => {
         setAnswers(prev => ({ ...prev, [questionId]: answer }));
     };
 
+    // Show error state
     if (error) {
-        return <div className="p-6 text-center text-red-500">{error}</div>;
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-red-500 text-lg mb-4">{error}</p>
+                    <GoBackButton path="/student/dashboard/exams" />
+                </div>
+            </div>
+        );
     }
 
+    // Show loading state
     if (loading || !examData) {
-        return <div className="flex justify-center items-center h-screen">Loading exam...</div>;
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mb-4"></div>
+                    <p>Loading exam...</p>
+                </div>
+            </div>
+        );
     }
 
     return (
         <div className="min-h-screen bg-gray-50 p-4 mt-10">
             <ToastContainer />
+
             {examStatus === 'started' && (
                 <div className="flex flex-col items-center">
-                    <div className="fixed top-14 right-4 bg-white p-4 rounded shadow">
+                    <div className="fixed top-14 right-4 bg-white p-4 rounded shadow z-50">
                         <div className="text-xl font-bold">
                             Time Left: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
                         </div>
@@ -192,7 +287,7 @@ const ExamInterface = () => {
                     <div className="max-w-3xl mx-auto mt-20 bg-white p-6 rounded shadow">
                         <h1 className="text-2xl font-bold mb-6">{examData.name}</h1>
 
-                        {questions.map((question, index) => (
+                        {questions && questions.map((question, index) => (
                             <div key={question.id} className="mb-8">
                                 <p className="font-semibold mb-4">
                                     {index + 1}. {question.question}
@@ -243,9 +338,12 @@ const ExamInterface = () => {
                         ))}
 
                         <button
-                            onClick={() => submitExams()}  
+                            onClick={() => submitExams()}
                             disabled={isSubmitting}
-                            className={`px-8 py-3 rounded mb-8 text-white ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}
+                            className={`px-8 py-3 rounded mb-8 text-white ${isSubmitting
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-green-600 hover:bg-green-700'
+                                }`}
                         >
                             {isSubmitting ? 'Submitting...' : 'Submit Exam'}
                         </button>
@@ -255,11 +353,12 @@ const ExamInterface = () => {
 
             {examStatus === 'submitted' && (
                 <div className="flex flex-col items-center justify-center min-h-screen">
-                    <div className="text-center mb-6">
-                        <h2 className="text-2xl font-bold mb-4">Exam Submitted Successfully</h2>
-                        <p>Thank you for completing the exam.</p>
+                    <div className="text-center mb-6 bg-white p-8 rounded-lg shadow-lg">
+                        <div className="text-green-500 text-6xl mb-4">✓</div>
+                        <h2 className="text-2xl font-bold mb-4 text-green-600">Exam Submitted Successfully!</h2>
+                        <p className="text-gray-600 mb-4">Thank you for completing the exam.</p>
+                        <p className="text-sm text-gray-500">Redirecting to exams page...</p>
                     </div>
-                    <GoBackButton path={"/student/dashboard/exams"} />
                 </div>
             )}
         </div>
@@ -267,7 +366,3 @@ const ExamInterface = () => {
 };
 
 export default ExamInterface;
-
-
-
-
