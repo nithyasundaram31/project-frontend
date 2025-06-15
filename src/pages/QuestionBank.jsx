@@ -157,7 +157,7 @@ const QuestionBank = () => {
       const matchSearch = q.question.toLowerCase().includes(search.toLowerCase());
       const matchType = type ? q.questionType === type : true;
       const matchDiff = difficulty ? q.difficulty === difficulty : true;
-      const matchExam = exam ? q.exam === exam : true;
+      const matchExam = exam ? q.exam._id === exam : true;
       return matchSearch && matchType && matchDiff && matchExam;
     });
 
