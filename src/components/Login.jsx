@@ -76,7 +76,7 @@ const Login = () => {
                     </p>
                 </div>
 
-                {/* 🔥 New Admin Login link */}
+                {/*  New Admin Login link */}
                 <div className='mt-2'>
                     <p>Are you an Admin?
                         <Link to="/admin/login" className='ml-2 underline text-red-700 font-semibold'>
