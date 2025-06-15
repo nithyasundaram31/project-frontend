@@ -82,3 +82,7 @@ npm run dev
 **Admin and Student Views**
 **Admin:** Has access to dashboard sections for managing exams, students, and analytics.
 **Student:** Can access exams, view results, and track performance.
+
+** Test for Admin Login(secure)**
+Email:admin@gmail.com
+Password:admin123
