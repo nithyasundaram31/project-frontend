@@ -1,6 +1,7 @@
 import instance from '../../services/instance';
 import { toast } from 'react-toastify';
 
+
 export const register = (userData) => async (dispatch) => {
   try {
     const response = await instance.post('/api/auth/register', userData);
@@ -10,6 +11,7 @@ export const register = (userData) => async (dispatch) => {
   } catch (error) {
     toast.error(error?.response?.data?.message || 'Registration failed');
     dispatch({ type: 'REGISTER_FAIL', payload: error?.response?.data });
+    return null;
   }
 };
 
@@ -17,24 +19,26 @@ export const register = (userData) => async (dispatch) => {
 export const login = (userData) => async (dispatch) => {
   try {
     const response = await instance.post('/api/auth/login', userData);
-    // toast.success(response.data?.message || 'Login successful');
     dispatch({ type: 'LOGIN_SUCCESS', payload: response.data });
-    // Save user and token to localStorage
     localStorage.setItem('user', JSON.stringify(response.data.user));
     localStorage.setItem('token', response.data.token);
     return response.data;
   } catch (error) {
     toast.error(error?.response?.data?.message || 'Login failed');
     dispatch({ type: 'LOGIN_FAIL', payload: error?.response?.data });
+    return null;
   }
 };
 
+
 export const logout = () => (dispatch) => {
-  localStorage.removeItem('user');
-  localStorage.removeItem('token');
-  localStorage.removeItem('submitedData');
-  dispatch({ type: 'LOGOUT' });
   toast.success('Logout successful');
+  setTimeout(() => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    localStorage.removeItem('submitedData');
+    dispatch({ type: 'LOGOUT' });
+  }, 300);
   return { message: 'Logout successful' };
 };
 

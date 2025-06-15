@@ -1,12 +1,12 @@
 import './App.css';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { useEffect } from 'react';
 import 'react-toastify/dist/ReactToastify.css';
 
 import Register from './components/Register';
 import Login from './components/Login';
 import AdminLogin from './pages/AdminLogin';  
-
 import StudentDashboard from './pages/studentPages/StudentDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import ProfileUpdate from './pages/ProfilePage';
@@ -15,9 +15,6 @@ import StudentsList from './pages/StudentsList';
 import QuestionBank from './pages/QuestionBank';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import ErrorPage from './components/ErrorPage';
-// import TermsOfService from './components/footer/TermsOfService';
-// import PrivacyPolicy from './components/footer/PrivacyPolicy';
-// import About from './components/footer/About';
 import ExamView from './components/ExamView';
 import StudentDashboardPage from './pages/studentPages/StudentDashboardPage';
 import UpcomingExams from './pages/studentPages/UpcomingExams';
@@ -28,15 +25,30 @@ import StudentResult from './components/StudentResults';
 
 function App() {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    const token = localStorage.getItem('token');
+    if (user && token) {
+      dispatch({
+        type: 'LOGIN_SUCCESS',
+        payload: { user, token }
+      });
+    }
+  }, [dispatch]);
+
+  if (isAuthenticated && !user) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Routes>
-     
       <Route
         path="/"
         element={
-          isAuthenticated ? (
-            <Navigate to={`/${user?.role}/dashboard`} />
+          isAuthenticated && user?.role ? (
+            <Navigate to={`/${user.role}/dashboard`} />
           ) : (
             <Login />
           )
@@ -46,12 +58,8 @@ function App() {
       {/* Public routes */}
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
-       <Route path="/admin/login" element={<AdminLogin />} />
-      {/* <Route path="/about" element={<About />} /> */}
-      {/* <Route path="/privacy" element={<PrivacyPolicy />} /> */}
-      {/* <Route path="/terms" element={<TermsOfService />} /> */}
+      <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/students" element={<StudentsList />} />
-
       
       <Route
         path="/profile"
@@ -101,8 +109,6 @@ function App() {
 
       {/* Error route */}
       <Route path="/error" element={<ErrorPage />} />
-
-      {/* all unmatched routes and redirect or show error */}
       <Route path="*" element={<Navigate to="/error" />} />
     </Routes>
   );
