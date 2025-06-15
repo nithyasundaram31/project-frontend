@@ -25,7 +25,7 @@ const Register = () => {
     return (
         <div className='flex justify-center items-center flex-col bg-gradient-to-tr from-orange-400 to-blue-300 min-h-screen'>
             <div className='p-4 '>
-                <h2 className="text-3xl md:text-4xl font-bold text-center text-blue-900">Online Assessment Platform</h2>
+                <h2 className="text-3xl md:text-4xl mb-6 font-bold text-center text-blue-900">Online Assessment Platform</h2>
             </div>
             <form onSubmit={handleRegister} className='w-96 p-6 bg-white bg-opacity-30 rounded'>
                 <h2 className='mb-8 text-4xl font-bold text-gray-800'>Register</h2>

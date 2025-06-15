@@ -41,7 +41,7 @@ const Login = () => {
     return (
         <div className='flex justify-center items-center flex-col min-h-screen bg-gradient-to-tr from-blue-300 to-pink-300 px-4'>
             <div className='p-4 '>
-                <h2 className="text-4xl md:text-4xl text-center font-bold text-indigo-800">Online Assessment Platform</h2>
+                <h2 className="text-3xl md:text-4xl text-center font-bold text-indigo-800">Online Assessment Platform</h2>
             </div>
 
             <form onSubmit={handleLogin} className=' mt-6 w-96 mb-10 p-6 border-1 bg-white bg-opacity-30 rounded'>
