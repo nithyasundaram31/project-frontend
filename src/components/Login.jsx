@@ -39,12 +39,12 @@ const Login = () => {
     };
 
     return (
-        <div className='min-h-screen bg-gradient-to-tr from-blue-300 to-pink-300 px-4'>
+        <div className='flex justify-center items-center flex-col min-h-screen bg-gradient-to-tr from-blue-300 to-pink-300 px-4'>
             <div className='p-4 '>
-                <h2 className="text-4xl mt-8  text-center font-bold text-indigo-800">Online Assessment Platform</h2>
+                <h2 className="text-4xl mt-8 text-center font-bold text-indigo-800">Online Assessment Platform</h2>
             </div>
 
-            <form onSubmit={handleLogin} className=' mx-auto mt-6 w-96 mb-10 p-6 border-1 bg-white bg-opacity-30 rounded'>
+            <form onSubmit={handleLogin} className=' mt-6 w-96 mb-10 p-6 border-1 bg-white bg-opacity-30 rounded'>
                 <h2 className='mb-8 text-4xl font-bold text-gray-800'>Login</h2>
 
                 <input
