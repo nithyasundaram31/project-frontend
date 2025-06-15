@@ -28,22 +28,6 @@ import StudentResult from './components/StudentResults';
 
 function App() {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    const token = localStorage.getItem('token');
-    if (user && token) {
-      dispatch({
-        type: 'LOGIN_SUCCESS',
-        payload: { user, token }
-      });
-    }
-  }, [dispatch]);
-  if (isAuthenticated && !user) {
-    return <div>Loading...</div>;
-  }
-
 
   return (
     <Routes>
